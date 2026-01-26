@@ -1,4 +1,4 @@
-// Загружаем посты из локального хранилища или создаем пустой массив
+// Загружаем посты из localStorage или создаем пустой массив
 let posts = JSON.parse(localStorage.getItem("posts")) || [];
 
 const feed = document.getElementById("feed");
@@ -31,9 +31,9 @@ function render(list = posts) {
   document.querySelectorAll(".deletePost").forEach(btn => {
     btn.onclick = () => {
       const idx = btn.getAttribute("data-index");
-      posts.splice(idx, 1); // удаляем из массива
-      localStorage.setItem("posts", JSON.stringify(posts)); // сохраняем
-      render(); // перерисовываем ленту
+      posts.splice(idx, 1);
+      localStorage.setItem("posts", JSON.stringify(posts));
+      render();
     };
   });
 
