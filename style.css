@@ -1,28 +1,46 @@
+/* Фон всего приложения */
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
-  background: #0f0f0f;
-  color: white;
+  background: #FCD8CC; /* фон приложения */
+  color: black; /* основной текст */
 }
 
+/* Шапка приложения */
 header {
   padding: 12px;
-  background: #1c1c1e;
+  background: #FCD8CC;
   position: sticky;
   top: 0;
+  z-index: 10;
 }
 
-input {
+/* Заголовок DIX */
+header h1 {
+  color: #FEF2DB; /* цвет заголовка */
+  font-size: 28px;
+  margin: 0;
+}
+
+/* Поисковая строка */
+input#search {
   width: 100%;
   padding: 10px;
   border-radius: 10px;
   border: none;
   margin-top: 8px;
+  background: white; /* белая строка */
+  color: black;
+  font-size: 14px;
 }
 
+/* Посты */
 .post {
   padding: 14px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid #FAD1C0; 
+  border-radius: 12px;
+  margin: 8px;
+  background: #FFE6DC; /* фон поста */
 }
 
 .tag {
@@ -41,22 +59,30 @@ input {
 a {
   color: #4da6ff;
   word-break: break-all;
+  text-decoration: none;
 }
 
-/* Кнопки добавить, редактировать и удалить */
+/* Кнопка добавления нового поста (+) */
 #addPost {
   position: fixed;
   right: 16px;
   bottom: 16px;
   width: 56px;
   height: 56px;
-  font-size: 28px;
+  font-size: 32px;
   border-radius: 50%;
   border: none;
-  background: #4da6ff;
-  color: white;
+  background: white;
+  color: #FCD8CC;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
+#addPost:hover {
+  background: #FFE6DC;
+}
+
+/* Кнопки редактирования и удаления */
 .post-buttons {
   margin-top: 8px;
 }
@@ -66,12 +92,13 @@ a {
   padding: 6px 10px;
   border-radius: 8px;
   border: none;
-  background: #4da6ff;
-  color: white;
+  background: white; /* кнопки белые */
+  color: black;       /* текст чёрный */
   font-size: 13px;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .post-buttons button:hover {
-  background: #3399ff;
+  background: #FFE6DC; /* при наведении светлее */
 }
