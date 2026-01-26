@@ -2,22 +2,25 @@
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
-  background: #FCD8CC; /* фон приложения */
-  color: black; /* основной текст чёрный для контраста с фоном */
+  background: #004d33; /* фон приложения */
+  color: white; /* основной текст */
 }
 
 /* Шапка приложения */
 header {
   padding: 12px;
-  background: #FCD8CC; /* совпадает с фоном */
+  background: black; /* черная шапка */
   position: sticky;
   top: 0;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Заголовок DIX */
 header h1 {
-  color: #FEF2DB; /* цвет заголовка */
+  color: #39ff14; /* ярко-зеленый заголовок */
   font-size: 28px;
   margin: 0;
 }
@@ -29,22 +32,23 @@ input#search {
   border-radius: 10px;
   border: none;
   margin-top: 8px;
-  background: white; /* белая строка */
-  color: black;
+  background: black; /* черная строка */
+  color: white; /* текст внутри белый */
   font-size: 14px;
 }
 
 /* Посты */
 .post {
   padding: 14px;
-  border-bottom: 1px solid #FAD1C0; /* мягкая граница под фон */
+  border-bottom: 1px solid #003322; 
   border-radius: 12px;
   margin: 8px;
-  background: #FFE6DC; /* чуть светлее фон для поста */
+  background: black; /* фон постов черный */
+  color: white; /* текст внутри постов белый */
 }
 
 .tag {
-  color: #4da6ff;
+  color: #39ff14; /* темы постов ярко-зеленые */
   font-size: 13px;
   margin-bottom: 6px;
 }
@@ -56,8 +60,9 @@ input#search {
   margin-top: 10px;
 }
 
+/* Ссылки внутри постов */
 a {
-  color: #4da6ff;
+  color: #39ff14; /* ссылки зеленые */
   word-break: break-all;
   text-decoration: none;
 }
@@ -72,14 +77,14 @@ a {
   font-size: 32px;
   border-radius: 50%;
   border: none;
-  background: white; /* белый фон */
-  color: #FCD8CC; /* цвет + совпадает с фоном приложения */
+  background: black; /* черный кружок */
+  color: #004d33; /* символ + цветом фона приложения */
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 #addPost:hover {
-  background: #FFE6DC; /* эффект при наведении */
+  background: #222; /* чуть светлее при наведении */
 }
 
 /* Кнопки редактирования и удаления */
@@ -92,12 +97,13 @@ a {
   padding: 6px 10px;
   border-radius: 8px;
   border: none;
-  background: #4da6ff;
-  color: white;
+  background: black; /* кнопки черные */
+  color: white;       /* текст белый */
   font-size: 13px;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .post-buttons button:hover {
-  background: #3399ff;
+  background: #222; /* чуть светлее при наведении */
 }
