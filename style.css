@@ -10,23 +10,24 @@ body {
 header {
   padding: 12px;
   background: black; /* черная шапка */
+  position: relative; /* для поиска */
   display: flex;
-  justify-content: space-between; /* DIX слева, поиск справа */
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
-/* Заголовок DIX (слева) */
+/* Заголовок DIX (не трогаем, остаётся на месте) */
 header h1 {
   color: #39ff14; /* ярко-зеленый заголовок */
   font-size: 28px;
   margin: 0;
 }
 
-/* Поисковая строка (справа) */
+/* Поисковая строка справа */
 input#search {
+  position: absolute;
+  right: 12px; /* сдвигаем к правому краю шапки */
+  top: 50%; /* выравниваем по вертикали */
+  transform: translateY(-50%);
   width: 200px;
   padding: 6px 10px;
   border-radius: 10px;
@@ -34,7 +35,6 @@ input#search {
   background: black; /* черная строка */
   color: white; /* текст внутри белый */
   font-size: 14px;
-  text-align: left;
 }
 
 /* Посты */
