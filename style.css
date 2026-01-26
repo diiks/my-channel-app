@@ -43,6 +43,7 @@ a {
   word-break: break-all;
 }
 
+/* Кнопки добавить, редактировать и удалить */
 #addPost {
   position: fixed;
   right: 16px;
@@ -54,4 +55,23 @@ a {
   border: none;
   background: #4da6ff;
   color: white;
+}
+
+.post-buttons {
+  margin-top: 8px;
+}
+
+.post-buttons button {
+  margin-right: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #4da6ff;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.post-buttons button:hover {
+  background: #3399ff;
 }
