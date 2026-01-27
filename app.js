@@ -1,95 +1,71 @@
-const addBtn = document.getElementById('addBtn');
-const topicModal = document.getElementById('topicModal');
-const noteModal = document.getElementById('noteModal');
-
-const topicInput = document.getElementById('topicInput');
-const noteText = document.getElementById('noteText');
-const searchInput = document.getElementById('search');
-
-const goToText = document.getElementById('goToText');
+const openModal = document.getElementById('openModal');
+const closeModal = document.getElementById('closeModal');
 const saveNote = document.getElementById('saveNote');
-const closeTopic = document.getElementById('closeTopic');
-const closeNote = document.getElementById('closeNote');
-const deleteNoteBtn = document.getElementById('deleteNote');
+const modal = document.getElementById('noteModal');
+const noteText = document.getElementById('noteText');
+const notesContainer = document.getElementById('notes');
+const mediaInput = document.getElementById('mediaInput');
 
-const notesContainer = document.getElementById('notesContainer');
+let notes = JSON.parse(localStorage.getItem('notes')) || [];
 
-let notes = JSON.parse(localStorage.getItem('dixNotes')) || [];
-let tempTopic = '';
-let editingIndex = null;
-
-topicModal.classList.add('hidden');
-noteModal.classList.add('hidden');
-
-addBtn.onclick = () => {
-  topicInput.value = '';
-  topicModal.classList.remove('hidden');
+/* ===== ОТКРЫТЬ / ЗАКРЫТЬ ===== */
+openModal.onclick = () => {
+  modal.classList.remove('hidden');
 };
 
-closeTopic.onclick = () => topicModal.classList.add('hidden');
-
-goToText.onclick = () => {
-  if (!topicInput.value.trim()) return alert('Введите тему');
-  tempTopic = topicInput.value.trim();
-  topicModal.classList.add('hidden');
+closeModal.onclick = () => {
+  modal.classList.add('hidden');
   noteText.value = '';
-  editingIndex = null;
-  noteModal.classList.remove('hidden');
 };
 
-closeNote.onclick = () => noteModal.classList.add('hidden');
-
+/* ===== СОХРАНИТЬ ===== */
 saveNote.onclick = () => {
   if (!noteText.value.trim()) return;
 
-  if (editingIndex !== null) {
-    notes[editingIndex].text = noteText.value;
-  } else {
-    notes.push({
-      topic: tempTopic,
-      text: noteText.value,
-      date: new Date().toLocaleDateString()
-    });
-  }
+  notes.unshift({
+    text: noteText.value,
+    date: new Date().toLocaleDateString()
+  });
 
-  localStorage.setItem('dixNotes', JSON.stringify(notes));
-  noteModal.classList.add('hidden');
+  localStorage.setItem('notes', JSON.stringify(notes));
   renderNotes();
+
+  noteText.value = '';
+  modal.classList.add('hidden');
 };
 
-function deleteNote() {
-  if (editingIndex === null) return;
-  notes.splice(editingIndex, 1);
-  localStorage.setItem('dixNotes', JSON.stringify(notes));
-  noteModal.classList.add('hidden');
-  renderNotes();
-}
+/* ===== ГАЛЕРЕЯ ===== */
+mediaInput.onchange = () => {
+  const file = mediaInput.files[0];
+  if (!file) return;
 
-function renderNotes(filter = '') {
+  const reader = new FileReader();
+  reader.onload = () => {
+    noteText.value += `\n[image:${reader.result}]\n`;
+  };
+  reader.readAsDataURL(file);
+};
+
+/* ===== РЕНДЕР ===== */
+function renderNotes() {
   notesContainer.innerHTML = '';
-  notes.forEach((note, index) => {
-    if (
-      !note.topic.toLowerCase().includes(filter) &&
-      !note.text.toLowerCase().includes(filter)
-    ) return;
 
+  notes.forEach(note => {
     const div = document.createElement('div');
     div.className = 'note-preview';
-    div.innerHTML = `<div class="date">${note.date}</div>${note.topic}`;
-    div.onclick = () => openNote(index);
+
+    let content = note.text.replace(
+      /\[image:(.*?)\]/g,
+      '<img src="$1" style="width:100%;border-radius:16px;margin-top:10px;">'
+    );
+
+    div.innerHTML = `
+      <div class="date">${note.date}</div>
+      <div>${content}</div>
+    `;
+
     notesContainer.appendChild(div);
   });
 }
-
-function openNote(index) {
-  editingIndex = index;
-  tempTopic = notes[index].topic;
-  noteText.value = notes[index].text;
-  noteModal.classList.remove('hidden');
-}
-
-searchInput.oninput = e => {
-  renderNotes(e.target.value.toLowerCase());
-};
 
 renderNotes();
