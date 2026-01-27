@@ -1,63 +1,64 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DIX</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIX</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>DIX</h1>
-    <div id="folderContainer">
-      <select id="folderSelect"></select>
-      <button id="addFolder">➕</button>
-      <button id="editFolder">✏️</button>
-      <button id="deleteFolder">🗑️</button>
+
+<header>
+  <h1>DIX</h1>
+  <div id="folderContainer">
+    <select id="folderSelect"></select>
+    <button id="addFolder">➕</button>
+    <button id="editFolder">✏️</button>
+    <button id="deleteFolder">🗑️</button>
+  </div>
+  <input type="text" id="search" placeholder="Поиск...">
+</header>
+
+<main id="notesContainer"></main>
+
+<button id="addPost">+</button>
+
+<!-- Модальное окно темы -->
+<div id="themeModal" class="hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span>Введите тему заметки</span>
+      <button id="closeThemeModal">&times;</button>
     </div>
-    <input type="text" id="search" placeholder="Поиск...">
-  </header>
-
-  <main id="notesContainer"></main>
-
-  <button id="addPost">+</button>
-
-  <!-- Модальное окно темы -->
-  <div id="themeModal" class="hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <span>Введите тему заметки</span>
-        <button id="closeThemeModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="text" id="noteTopic" placeholder="Тема">
-        <select id="noteFolder"></select>
-      </div>
-      <div class="modal-footer">
-        <button id="confirmTopic">Далее</button>
-      </div>
+    <div class="modal-body">
+      <input type="text" id="noteTopic" placeholder="Тема заметки">
+      <select id="noteFolder"></select>
+    </div>
+    <div class="modal-footer">
+      <button id="confirmTopic">Далее</button>
     </div>
   </div>
+</div>
 
-  <!-- Модальное окно текста/медиа -->
-  <div id="modalOverlay" class="hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <span id="modalDate"></span>
-        <button id="closeModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <textarea id="noteText" placeholder="Напишите заметку..."></textarea>
-      </div>
-      <div class="modal-footer">
-        <button id="addLink">🔗</button>
-        <input type="file" id="fileInput" accept="image/*,video/*,.pdf" hidden>
-        <button id="addMedia">📷</button>
-        <button id="saveNote">Сохранить</button>
-      </div>
+<!-- Модальное окно текста/медиа -->
+<div id="modalOverlay" class="hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modalDate"></span>
+      <button id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <textarea id="noteText" placeholder="Напишите заметку..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button id="addLink">🔗</button>
+      <input type="file" id="fileInput" accept="image/*,video/*,.pdf" hidden>
+      <button id="addMedia">📷</button>
+      <button id="saveNote">Сохранить</button>
     </div>
   </div>
+</div>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
