@@ -50,9 +50,7 @@ saveNote.onclick = () => {
 /* УДАЛЕНИЕ */
 deleteNoteBtn.onclick = () => {
   if (currentIndex === null) return;
-
-  const ok = confirm('Удалить заметку?');
-  if (!ok) return;
+  if (!confirm('Удалить заметку?')) return;
 
   notes.splice(currentIndex, 1);
   localStorage.setItem('notes', JSON.stringify(notes));
