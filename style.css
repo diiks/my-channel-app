@@ -14,7 +14,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
 }
 
 .logo {
@@ -32,63 +31,10 @@ body {
   font-size: 16px;
 }
 
-.menu-toggle {
-  font-size: 28px;
-  cursor: pointer;
-  margin-left: 10px;
-  color: white;
-}
-
-/* БОКОВОЕ МЕНЮ */
-.side-menu {
-  position: fixed;
-  top: 70px;
-  left: 0;
-  width: 250px;
-  height: calc(100% - 70px);
-  background: #111;
-  color: white;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 1000;
-}
-
-.hidden { display: none; }
-
-.side-menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.side-menu li {
-  padding: 10px 14px;
-  cursor: pointer;
-  border-radius: 14px;
-}
-
-.side-menu li.active, .side-menu li:hover {
-  background: #222;
-}
-
-.folder-actions button {
-  width: 100%;
-  margin-top: 6px;
-  border-radius: 12px;
-  border: 1px solid #555;
-  background: #222;
-  color: white;
-  padding: 8px 0;
-  cursor: pointer;
-}
-
 /* ОСНОВА */
 .main {
   max-width: 520px;
   margin: auto;
-  padding-top: 16px;
 }
 
 .notes-grid {
@@ -130,6 +76,8 @@ body {
   align-items: center;
 }
 
+.hidden { display: none; }
+
 .card {
   background: #0d0d0d;
   border-radius: 26px;
@@ -142,8 +90,7 @@ body {
 }
 
 .card input,
-.card textarea,
-.card select {
+.card textarea {
   background: #222;
   border: 1px solid #555;
   border-radius: 18px;
