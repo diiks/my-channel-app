@@ -18,7 +18,7 @@ let notes = JSON.parse(localStorage.getItem('notes')) || [];
 let currentIndex = null;
 let currentMedia = null;
 
-/* ОТКРЫТИЕ */
+/* ОТКРЫТИЕ СОЗДАНИЯ */
 openCreate.onclick = () => {
   currentIndex = null;
   currentMedia = null;
@@ -44,12 +44,10 @@ mediaInput.onchange = () => {
       data: reader.result
     };
 
-    mediaPreview.innerHTML = '';
-    if (currentMedia.type === 'image') {
-      mediaPreview.innerHTML = `<img src="${currentMedia.data}">`;
-    } else {
-      mediaPreview.innerHTML = `<video src="${currentMedia.data}" controls></video>`;
-    }
+    mediaPreview.innerHTML =
+      currentMedia.type === 'image'
+        ? `<img src="${currentMedia.data}">`
+        : `<video src="${currentMedia.data}" controls></video>`;
   };
   reader.readAsDataURL(file);
 };
@@ -91,11 +89,10 @@ function renderNotes() {
       viewMedia.innerHTML = '';
 
       if (n.media) {
-        if (n.media.type === 'image') {
-          viewMedia.innerHTML = `<img src="${n.media.data}">`;
-        } else {
-          viewMedia.innerHTML = `<video src="${n.media.data}" controls></video>`;
-        }
+        viewMedia.innerHTML =
+          n.media.type === 'image'
+            ? `<img src="${n.media.data}">`
+            : `<video src="${n.media.data}" controls></video>`;
       }
 
       viewModal.classList.remove('hidden');
