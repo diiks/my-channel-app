@@ -1,73 +1,159 @@
-/* Фон всего приложения */
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
-  background: #004d33; /* фон приложения */
-  color: white; /* основной текст */
+  background: #004d33;
+  color: white;
 }
 
-/* Шапка приложения */
 header {
   padding: 12px;
-  background: black; /* черная шапка */
-  position: relative; /* для поиска */
+  background: black;
   display: flex;
   align-items: center;
+  position: relative;
 }
 
-/* Заголовок DIX (не трогаем, остаётся на месте) */
 header h1 {
-  color: #39ff14; /* ярко-зеленый заголовок */
+  color: #39ff14;
   font-size: 28px;
   margin: 0;
 }
 
-/* Поисковая строка справа */
-input#search {
+#search {
   position: absolute;
-  right: 12px; /* сдвигаем к правому краю шапки */
-  top: 50%; /* выравниваем по вертикали */
+  right: 12px;
+  top: 50%;
   transform: translateY(-50%);
   width: 200px;
   padding: 6px 10px;
   border-radius: 10px;
   border: none;
-  background: black; /* черная строка */
-  color: white; /* текст внутри белый */
+  background: black;
+  color: white;
   font-size: 14px;
 }
 
-/* Посты */
-.post {
-  padding: 14px;
-  border-bottom: 1px solid #003322; 
-  border-radius: 12px;
-  margin: 8px;
-  background: black; /* фон постов черный */
-  color: white; /* текст внутри постов белый */
+#notesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px;
+  gap: 10px;
 }
 
-.tag {
-  color: #39ff14; /* темы постов ярко-зеленые */
-  font-size: 13px;
-  margin-bottom: 6px;
+/* Превью заметки */
+.note-preview {
+  width: 120px;
+  height: 120px;
+  background: black;
+  color: white;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  word-break: break-word;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.post img,
-.post video {
+.note-preview:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+}
+
+.note-preview span.date {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 10px;
+  color: #ccc;
+}
+
+/* Модальное окно (чатовый стиль) */
+.hidden { display: none; }
+
+#modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+.modal {
+  background: black;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  max-height: 80%;
+  animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+  from {transform: translateY(50px);}
+  to {transform: translateY(0);}
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  background: #111;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-body textarea {
+  width: 100%;
+  height: 150px;
+  padding: 8px;
   border-radius: 12px;
-  margin-top: 10px;
+  border: none;
+  background: #222;
+  color: white;
+  resize: none;
+  font-size: 14px;
 }
 
-/* Ссылки внутри постов */
-a {
-  color: #39ff14; /* ссылки зеленые */
-  word-break: break-all;
-  text-decoration: none;
+.modal-footer {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  background: #111;
+  border-radius: 0 0 12px 12px;
 }
 
-/* Кнопка добавления нового поста (+) */
+.modal-footer button {
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: none;
+  background: black;
+  color: white;
+  cursor: pointer;
+  margin-right: 6px;
+}
+
 #addPost {
   position: fixed;
   right: 16px;
@@ -77,33 +163,14 @@ a {
   font-size: 32px;
   border-radius: 50%;
   border: none;
-  background: black; /* черный кружок */
-  color: #004d33; /* символ + цветом фона приложения */
+  background: black;
+  color: #004d33;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 #addPost:hover {
-  background: #222; /* чуть светлее при наведении */
-}
-
-/* Кнопки редактирования и удаления */
-.post-buttons {
-  margin-top: 8px;
-}
-
-.post-buttons button {
-  margin-right: 6px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: none;
-  background: black; /* кнопки черные */
-  color: white;       /* текст белый */
-  font-size: 13px;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.post-buttons button:hover {
-  background: #222; /* чуть светлее при наведении */
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
 }
