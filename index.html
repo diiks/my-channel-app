@@ -144,6 +144,9 @@ textarea{
   font-size:22px;
   line-height:1.5;
   white-space:pre-wrap;
+  word-wrap:break-word;
+  max-height:300px;
+  overflow-y:auto;
 }
 
 /* ACTIONS */
@@ -225,8 +228,8 @@ function openNote(i){
   const n=notes[i];
   titleInput.value=n.title;
   textInput.value=n.text;
-  viewTitle.textContent=n.title;
-  viewText.textContent=n.text;
+  viewTitle.textContent=n.text;   // Меняем местами: сначала текст
+  viewText.textContent=n.title;   // а потом тема
   mediaArr=[...n.media];
   drawMedia();
   modal.classList.add('active');
@@ -317,6 +320,7 @@ document.getElementById('card').addEventListener('touchend',e=>{
   if(dx<-80) modal.classList.remove('active');
 });
 
+/* Рендерим заметки при загрузке */
 render();
 </script>
 
