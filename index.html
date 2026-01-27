@@ -1,29 +1,17 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DIX</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIX</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="top-bar">
   <div class="logo">DIX</div>
-  <div class="menu-toggle" id="menuToggle">★</div>
   <input id="search" placeholder="Поиск">
 </header>
-
-<!-- БОКОВОЕ МЕНЮ ПАПОК -->
-<div class="side-menu hidden" id="sideMenu">
-  <h3>Папки</h3>
-  <ul id="folderList"></ul>
-  <div class="folder-actions">
-    <button id="addFolderBtn">Добавить папку</button>
-    <button id="editFolderBtn">Редактировать папку</button>
-    <button id="deleteFolderBtn">Удалить папку</button>
-  </div>
-</div>
 
 <main class="main">
   <div id="notes" class="notes-grid"></div>
@@ -36,10 +24,7 @@
   <div class="card">
     <input id="noteTitle" placeholder="Тема заметки">
     <textarea id="noteText" placeholder="Текст заметки"></textarea>
-    <label>
-      Папка:
-      <select id="noteFolder"></select>
-    </label>
+
     <div class="actions">
       <button id="saveNote">Сохранить</button>
       <button id="closeCreate">✖</button>
@@ -52,6 +37,7 @@
   <div class="card">
     <h2 id="viewTitle"></h2>
     <div id="viewText" class="view-text"></div>
+
     <div class="actions">
       <button id="editNote">Редактировать</button>
       <button id="deleteNote">Удалить</button>
