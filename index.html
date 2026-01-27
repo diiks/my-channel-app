@@ -4,20 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DIX</title>
-
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
-
-body{
-  background:#3c3a46;
+* {box-sizing:border-box;margin:0;padding:0;font-family:system-ui;}
+body {
+  background:#004d33;
   color:white;
   min-height:100vh;
 }
 
-/* HEADER */
 header{
   background:#000;
-  padding:18px;
+  padding:16px;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -30,96 +27,117 @@ header{
 }
 
 .search{
-  width:170px;
+  width:55%;
   padding:10px 14px;
-  border-radius:16px;
+  border-radius:14px;
   border:none;
   background:#1a1a1a;
   color:white;
+  font-size:16px;
 }
 
-/* NOTES GRID */
-main{
-  padding:18px;
+.container{
+  max-width:480px;
+  margin:0 auto;
+  padding:16px;
+}
+
+.notes{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
-  gap:16px;
-  justify-items:center;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
 }
 
-/* PREVIEW */
-.note{
-  background:#708090;
-  width:100%;
-  min-height:90px;
-  border-radius:20px;
+.note-preview{
+  background:#000;
+  border-radius:18px;
   padding:14px;
+  font-weight:600;
+  min-height:90px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-weight:600;
   text-align:center;
   cursor:pointer;
 }
 
-/* ADD BUTTON */
 .add-btn{
   position:fixed;
-  bottom:22px;
-  right:22px;
+  bottom:24px;
+  right:24px;
   width:64px;
   height:64px;
   border-radius:50%;
   background:#000;
-  color:#3c3a46;
+  color:#004d33;
   font-size:36px;
   border:none;
+  cursor:pointer;
 }
 
-/* MODAL */
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.85);
+  background:rgba(0,0,0,.6);
   display:none;
   justify-content:center;
-  align-items:flex-start;
-  overflow-y:auto;
-  padding:30px 0;
+  align-items:center;
 }
 
-.modal.active{display:flex}
+.modal.active{
+  display:flex;
+}
 
-.card{
+.modal-content{
   background:#0f0f0f;
-  width:90%;
-  max-width:420px;
-  border-radius:26px;
-  padding:20px;
+  width:92%;
+  max-height:85vh;
+  border-radius:18px;
+  padding:16px;
   display:flex;
   flex-direction:column;
-  gap:14px;
+  overflow:hidden;
 }
 
-/* INPUTS */
-input,textarea{
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.modal-header button{
+  background:#2d2d35;
+  border:none;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:12px;
+}
+
+.modal-body{
+  margin-top:12px;
+  overflow-y:auto;
+}
+
+.input{
+  width:100%;
   background:#1c1c1c;
-  border:1px solid #333;
-  border-radius:16px;
+  border:none;
+  border-radius:14px;
   padding:12px;
   color:white;
+  margin-bottom:10px;
 }
 
-textarea{
+.textarea{
+  min-height:120px;
   resize:none;
-  min-height:140px;
 }
 
-/* MEDIA */
-.media-list{
+.media{
   display:flex;
-  flex-direction:column;
-  gap:12px;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:8px;
 }
 
 .media-item{
@@ -128,207 +146,174 @@ textarea{
 
 .media-item img,
 .media-item video{
-  width:100%;
-  border-radius:16px;
+  width:120px;
+  border-radius:12px;
 }
 
-.media-item button{
+.media-item span{
   position:absolute;
-  top:6px;
-  right:6px;
+  top:4px;
+  right:4px;
   background:rgba(0,0,0,.7);
-  color:white;
-  border:none;
+  padding:2px 6px;
   border-radius:50%;
-  width:28px;
-  height:28px;
-  font-size:16px;
+  cursor:pointer;
 }
 
-/* VIEW MODE */
-.view-title{
-  font-size:14px;
-  opacity:.6;
-}
-
-.view-text{
-  font-size:22px;
-  line-height:1.5;
-  white-space:pre-wrap;
-}
-
-/* ACTIONS */
 .actions{
   display:flex;
-  gap:10px;
+  justify-content:space-between;
+  margin-top:12px;
 }
 
 .btn{
   flex:1;
+  margin:0 4px;
   padding:12px;
-  border-radius:18px;
+  border-radius:14px;
   border:none;
-  background:#222;
   color:white;
+  background:#2d2d35;
 }
 
-.delete{background:#ff3b3b}
+.btn.delete{background:#b63636;}
 </style>
 </head>
-
 <body>
 
 <header>
   <div class="logo">DIX</div>
-  <input class="search" placeholder="Поиск">
+  <input class="search" placeholder="Поиск..." />
 </header>
 
-<main id="notes"></main>
+<div class="container">
+  <div class="notes" id="notes"></div>
+</div>
 
-<button class="add-btn">+</button>
+<button class="add-btn" id="addBtn">+</button>
 
 <div class="modal" id="modal">
-  <div class="card" id="card">
-    <div id="viewTitle" class="view-title"></div>
-    <div id="viewText" class="view-text"></div>
+  <div class="modal-content" id="modalContent">
+    <div class="modal-header">
+      <button id="closeBtn">✕</button>
+      <button id="saveBtn">Сохранить</button>
+    </div>
 
-    <input id="title" placeholder="Тема">
-    <textarea id="text" placeholder="Текст заметки"></textarea>
+    <div class="modal-body">
+      <input class="input" id="title" placeholder="Тема" />
+      <textarea class="input textarea" id="text" placeholder="Текст заметки"></textarea>
 
-    <input type="file" id="media" accept="image/*,video/*" multiple>
-    <div class="media-list" id="mediaList"></div>
+      <input type="file" id="mediaInput" multiple accept="image/*,video/*" />
+      <div class="media" id="media"></div>
+    </div>
 
     <div class="actions">
-      <button class="btn" id="close">✖</button>
-      <button class="btn delete" id="delete">Удалить</button>
-      <button class="btn" id="save">Сохранить</button>
+      <button class="btn delete" id="deleteBtn">Удалить</button>
     </div>
   </div>
 </div>
 
 <script>
-let notes = JSON.parse(localStorage.getItem('notes') || '[]');
-let current = null;
-let mediaArr = [];
-
 const notesEl = document.getElementById('notes');
 const modal = document.getElementById('modal');
 const titleInput = document.getElementById('title');
 const textInput = document.getElementById('text');
-const mediaInput = document.getElementById('media');
-const mediaList = document.getElementById('mediaList');
-const viewTitle = document.getElementById('viewTitle');
-const viewText = document.getElementById('viewText');
+const mediaInput = document.getElementById('mediaInput');
+const mediaEl = document.getElementById('media');
 
-function render(){
+let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+let currentId = null;
+let mediaFiles = [];
+
+function saveStorage(){localStorage.setItem('notes',JSON.stringify(notes));}
+
+function renderNotes(filter=''){
   notesEl.innerHTML='';
-  notes.forEach((n,i)=>{
-    const d=document.createElement('div');
-    d.className='note';
-    d.textContent=n.title || '(без темы)';
-    d.onclick=()=>openNote(i);
-    notesEl.appendChild(d);
-  });
+  notes.filter(n => (n.title||'').toLowerCase().includes(filter))
+    .forEach(note=>{
+      const div=document.createElement('div');
+      div.className='note-preview';
+      div.textContent=note.title;
+      div.onclick=()=>openNote(note.id);
+      notesEl.appendChild(div);
+    });
 }
 
-function openNote(i){
-  current=i;
-  const n=notes[i];
-  titleInput.value=n.title||'';
-  textInput.value=n.text||'';
-  viewTitle.textContent=n.title||'';
-  viewText.textContent=n.text||'';
-
-  mediaArr = Array.isArray(n.media) ? [...n.media] : [];
-  drawMedia();
-
+function openNote(id){
+  const note=notes.find(n=>n.id===id);
+  if(!note)return;
+  currentId=id;
+  titleInput.value=note.title;
+  textInput.value=note.text;
+  mediaFiles=Array.isArray(note.media)?note.media:[];
+  renderMedia();
   modal.classList.add('active');
 }
 
-document.querySelector('.add-btn').onclick=()=>{
-  current=null;
-  titleInput.value='';
-  textInput.value='';
-  viewTitle.textContent='';
-  viewText.textContent='';
-  mediaArr=[];
-  drawMedia();
-  modal.classList.add('active');
-};
-
-document.getElementById('close').onclick=()=>modal.classList.remove('active');
-
-document.getElementById('save').onclick=()=>{
-  if(!titleInput.value.trim())return;
-  const note={
-    title:titleInput.value,
-    text:textInput.value,
-    media:mediaArr
-  };
-  current!==null ? notes[current]=note : notes.push(note);
-  localStorage.setItem('notes',JSON.stringify(notes));
-  modal.classList.remove('active');
-  render();
-};
-
-document.getElementById('delete').onclick=()=>{
-  if(current===null)return;
-  notes.splice(current,1);
-  localStorage.setItem('notes',JSON.stringify(notes));
-  modal.classList.remove('active');
-  render();
-};
-
-mediaInput.onchange=()=>{
-  [...mediaInput.files].forEach(f=>{
-    mediaArr.push({type:f.type,url:URL.createObjectURL(f)});
-  });
-  drawMedia();
-};
-
-function drawMedia(){
-  mediaList.innerHTML='';
-  mediaArr.forEach((m,i)=>{
-    const d=document.createElement('div');
-    d.className='media-item';
-    d.innerHTML=
-      (m.type.startsWith('image')
-      ? `<img src="${m.url}">`
-      : `<video src="${m.url}" controls></video>`)
-      + `<button onclick="removeMedia(${i})">✖</button>`;
-    mediaList.appendChild(d);
+function renderMedia(){
+  mediaEl.innerHTML='';
+  mediaFiles.forEach((m,i)=>{
+    const div=document.createElement('div');
+    div.className='media-item';
+    div.innerHTML=`
+      ${m.type.startsWith('image')?`<img src="${m.src}">`:`<video src="${m.src}" controls></video>`}
+      <span onclick="removeMedia(${i})">✕</span>
+    `;
+    mediaEl.appendChild(div);
   });
 }
 
 window.removeMedia=i=>{
-  mediaArr.splice(i,1);
-  drawMedia();
+  mediaFiles.splice(i,1);
+  renderMedia();
 };
 
-/* SEARCH — НЕ ЛОМАЕТ ДОСТУП */
-document.querySelector('.search').oninput=e=>{
-  const q=e.target.value.toLowerCase();
-  [...notesEl.children].forEach((el,i)=>{
-    const n=notes[i];
-    el.style.display =
-      (n.title||'').toLowerCase().includes(q) ||
-      (n.text||'').toLowerCase().includes(q)
-        ? 'flex'
-        : 'none';
+document.getElementById('addBtn').onclick=()=>{
+  currentId=null;
+  titleInput.value='';
+  textInput.value='';
+  mediaFiles=[];
+  renderMedia();
+  modal.classList.add('active');
+};
+
+document.getElementById('closeBtn').onclick=()=>modal.classList.remove('active');
+
+document.getElementById('saveBtn').onclick=()=>{
+  if(!titleInput.value.trim()) return;
+  if(currentId){
+    const n=notes.find(n=>n.id===currentId);
+    Object.assign(n,{title:titleInput.value,text:textInput.value,media:mediaFiles});
+  }else{
+    notes.push({id:Date.now(),title:titleInput.value,text:textInput.value,media:mediaFiles});
+  }
+  saveStorage();
+  renderNotes();
+  modal.classList.remove('active');
+};
+
+document.getElementById('deleteBtn').onclick=()=>{
+  if(!currentId)return;
+  notes=notes.filter(n=>n.id!==currentId);
+  saveStorage();
+  renderNotes();
+  modal.classList.remove('active');
+};
+
+mediaInput.onchange=e=>{
+  [...e.target.files].forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      mediaFiles.push({src:ev.target.result,type:f.type});
+      renderMedia();
+    };
+    reader.readAsDataURL(f);
   });
 };
 
-/* SWIPE LEFT TO CLOSE */
-let startX=0;
-document.getElementById('card').addEventListener('touchstart',e=>{
-  startX=e.touches[0].clientX;
-});
-document.getElementById('card').addEventListener('touchend',e=>{
-  if(e.changedTouches[0].clientX-startX < -80)
-    modal.classList.remove('active');
-});
+document.querySelector('.search').oninput=e=>renderNotes(e.target.value.toLowerCase());
 
-render();
+renderNotes();
 </script>
 
 </body>
