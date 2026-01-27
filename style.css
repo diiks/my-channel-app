@@ -2,8 +2,8 @@
 
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
   background: #004d33;
+  font-family: system-ui, sans-serif;
   color: white;
 }
 
@@ -17,36 +17,18 @@ body {
 }
 
 .logo {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 800;
   color: #39ff14;
 }
 
 #search {
-  background: #111;
+  background: #222;
   color: white;
-  border: none;
+  border: 1px solid #555;
   border-radius: 20px;
-  padding: 12px 18px;
+  padding: 10px 16px;
   font-size: 16px;
-  width: 180px;
-}
-
-/* ПАПКИ */
-.folders {
-  display: flex;
-  gap: 10px;
-  padding: 12px 18px;
-  justify-content: center;
-}
-
-.folders select,
-.folders button {
-  background: black;
-  color: white;
-  border-radius: 14px;
-  padding: 8px 12px;
-  border: none;
 }
 
 /* ОСНОВА */
@@ -58,25 +40,16 @@ body {
 .notes-grid {
   padding: 20px;
   display: grid;
-  grid-template-columns: 1fr;
   gap: 16px;
 }
 
 /* ПРЕВЬЮ */
 .note-preview {
   background: black;
-  border-radius: 22px;
+  border-radius: 20px;
   padding: 22px;
   font-size: 20px;
-  position: relative;
-}
-
-.note-preview .date {
-  position: absolute;
-  top: 10px;
-  right: 14px;
-  font-size: 12px;
-  opacity: 0.6;
+  cursor: pointer;
 }
 
 /* ПЛЮС */
@@ -84,8 +57,8 @@ body {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 72px;
-  height: 72px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   background: black;
   color: #004d33;
@@ -93,11 +66,11 @@ body {
   border: none;
 }
 
-/* МОДАЛКА */
+/* МОДАЛКИ */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0,0,0,.85);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -105,34 +78,39 @@ body {
 
 .hidden { display: none; }
 
-.modal-box {
-  background: black;
+.card {
+  background: #0d0d0d;
   border-radius: 26px;
   padding: 20px;
-  width: 92%;
+  width: 90%;
   max-width: 420px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
-.modal-box input,
-.modal-box textarea,
-.modal-box select {
-  background: #111;
-  color: white;
-  border: none;
+.card input,
+.card textarea {
+  background: #1a1a1a;
+  border: 1px solid #555;
   border-radius: 18px;
   padding: 14px;
+  color: white;
   font-size: 16px;
 }
 
-.modal-box textarea {
-  height: 40vh;
+.card textarea {
+  min-height: 40vh;
   resize: none;
 }
 
-.note-actions {
+.view-text {
+  max-height: 60vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.actions {
   display: flex;
   justify-content: space-between;
 }
