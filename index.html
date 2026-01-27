@@ -59,6 +59,84 @@
   </div>
 </div>
 
+<!-- Модальное окно для создания заметки -->
+<div id="note-modal" style="display:none">
+    <h2>Новая заметка</h2>
+    <form id="note-form">
+        <input type="text" placeholder="Название заметки" required />
+        <textarea placeholder="Содержание заметки"></textarea>
+        <button type="submit">Создать</button>
+        <span class="close">×</span>
+    </form>
+</div>
+
+<!-- Список заметок -->
+<div id="notes-list"></div>
+
 <script src="app.js"></script>
+
+<script>
+    // Обработчик отправки формы
+    document.getElementById('note-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const title = this.elements[0].value.trim(); // Название заметки
+        const content = this.elements[1].value.trim(); // Содержимое заметки
+
+        if (!title || !content) return; // Проверка заполнения полей
+
+        saveNote(title, content); // Сохраняем заметку
+        displayNotes(); // Показываем обновленный список заметок
+        clearForm(); // Очищаем форму
+        closeModal(); // Закрываем модальное окно
+    });
+
+    // Функция для сохранения заметки
+    function saveNote(title, content) {
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        notes.push({ title, content });
+        localStorage.setItem('notes', JSON.stringify(notes));
+    }
+
+    // Функция для отображения заметок
+    function displayNotes() {
+        const notesList = document.getElementById('notes-list');
+        notesList.innerHTML = '';
+
+        const notes = JSON.parse(localStorage.getItem('notes')) || [];
+        notes.forEach(note => {
+            const noteDiv = document.createElement('div');
+            noteDiv.className = 'note-item';
+            noteDiv.textContent = `${note.title}: ${note.content}`;
+            notesList.appendChild(noteDiv);
+        });
+    }
+
+    // Функция для очистки формы
+    function clearForm() {
+        document.getElementById('note-form').reset();
+    }
+
+    // Функция для закрытия модального окна
+    function closeModal() {
+        document.getElementById('note-modal').style.display = 'none';
+    }
+
+    // Инициализация отображения заметок при загрузке страницы
+    window.addEventListener('load', () => {
+        displayNotes();
+    });
+
+    // Обработчик открытия модального окна
+    document.querySelector('.open-modal').addEventListener('click', function() {
+        document.getElementById('note-modal').style.display = 'block';
+    });
+
+    // Обработчик закрытия модального окна
+    document.querySelector('.close').addEventListener('click', function() {
+        document.getElementById('note-modal').style.display = 'none';
+    });
+</script>
+
 </body>
 </html>
