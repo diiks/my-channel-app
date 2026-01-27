@@ -27,6 +27,10 @@ let editingIndex = null;
 let tempTopic = '';
 let tempFolder = 'Без категории';
 
+// === Инициализация ===
+renderFolders();
+renderNotes();
+
 // === Функции рендера ===
 function renderFolders() {
   folderSelect.innerHTML = '';
@@ -91,14 +95,14 @@ deleteFolderBtn.addEventListener('click', () => {
   renderNotes();
 });
 
-// === Нажатие на + (только тема) ===
+// === Кнопка "+" открывает только окно темы ===
 addPostBtn.addEventListener('click', () => {
   noteTopic.value = '';
   noteFolderSelect.value = folderSelect.value;
-  themeModal.classList.remove('hidden'); // окно темы открывается только при + 
+  themeModal.classList.remove('hidden'); // открываем тему
 });
 
-// === Закрытие окна темы (крестик) ===
+// === Закрытие темы крестиком ===
 closeThemeModal.addEventListener('click', () => {
   themeModal.classList.add('hidden'); // закрываем без сохранения
 });
@@ -108,7 +112,7 @@ confirmTopic.addEventListener('click', () => {
   if (!noteTopic.value.trim()) return alert('Введите тему!');
   tempTopic = noteTopic.value.trim();
   tempFolder = noteFolderSelect.value;
-  themeModal.classList.add('hidden'); // закрываем тему
+  themeModal.classList.add('hidden');
   openModal(); // открываем окно текста/медиа
 });
 
@@ -130,8 +134,10 @@ function openModal(index=null) {
   }
 }
 
-// === Закрытие окна текста (крестик = отмена) ===
-closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
+// === Закрытие окна текста крестиком (не сохраняем) ===
+closeModal.addEventListener('click', () => {
+  modalOverlay.classList.add('hidden'); // только закрываем
+});
 
 // === Сохранение заметки ===
 saveNoteBtn.addEventListener('click', () => {
@@ -150,7 +156,7 @@ saveNoteBtn.addEventListener('click', () => {
 
   localStorage.setItem('dixNotes', JSON.stringify(notes));
   renderNotes();
-  modalOverlay.classList.add('hidden'); // закрываем окно только после сохранения
+  modalOverlay.classList.add('hidden'); // закрываем после сохранения
 });
 
 // === Ссылки и медиа ===
@@ -174,7 +180,3 @@ fileInput.addEventListener('change', (event) => {
 
 // === Фильтр по папкам ===
 folderSelect.addEventListener('change', renderNotes);
-
-// === Инициализация ===
-renderFolders();
-renderNotes();
