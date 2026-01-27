@@ -91,15 +91,17 @@ deleteFolderBtn.addEventListener('click', () => {
   renderNotes();
 });
 
-// === Создание новой заметки (тема) ===
+// === Нажатие на + (только тема) ===
 addPostBtn.addEventListener('click', () => {
   noteTopic.value = '';
   noteFolderSelect.value = folderSelect.value;
   themeModal.classList.remove('hidden');
 });
 
+// === Закрытие окна темы ===
 closeThemeModal.addEventListener('click', () => themeModal.classList.add('hidden'));
 
+// === Подтверждение темы ===
 confirmTopic.addEventListener('click', () => {
   if (!noteTopic.value.trim()) return alert('Введите тему!');
   tempTopic = noteTopic.value.trim();
@@ -111,6 +113,7 @@ confirmTopic.addEventListener('click', () => {
 // === Модальное окно текста/медиа ===
 function openModal(index=null) {
   modalOverlay.classList.remove('hidden');
+
   if (index !== null) {
     noteText.value = notes[index].text;
     editingIndex = index;
@@ -125,12 +128,15 @@ function openModal(index=null) {
   }
 }
 
+// === Закрытие окна текста ===
 closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
 
+// === Сохранение заметки ===
 saveNoteBtn.addEventListener('click', () => {
   const text = noteText.value.trim();
   if (!text) return alert('Напишите заметку!');
   const date = modalDate.textContent;
+
   if (editingIndex !== null) {
     notes[editingIndex].text = text;
     notes[editingIndex].topic = tempTopic;
@@ -139,9 +145,10 @@ saveNoteBtn.addEventListener('click', () => {
   } else {
     notes.push({ topic: tempTopic, text, folder: tempFolder, date });
   }
+
   localStorage.setItem('dixNotes', JSON.stringify(notes));
-  modalOverlay.classList.add('hidden');
   renderNotes();
+  modalOverlay.classList.add('hidden');
 });
 
 // === Ссылки и медиа ===
