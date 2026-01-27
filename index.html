@@ -14,6 +14,12 @@
 </header>
 
 <main class="main">
+  <div class="folders-bar">
+    <select id="folderSelect"></select>
+    <button id="addFolderBtn">Добавить папку</button>
+    <button id="editFolderBtn">Редактировать папку</button>
+    <button id="deleteFolderBtn">Удалить папку</button>
+  </div>
   <div id="notes" class="notes-grid"></div>
 </main>
 
@@ -24,7 +30,10 @@
   <div class="card">
     <input id="noteTitle" placeholder="Тема заметки">
     <textarea id="noteText" placeholder="Текст заметки"></textarea>
-
+    <label>
+      Папка:
+      <select id="noteFolder"></select>
+    </label>
     <div class="actions">
       <button id="saveNote">Сохранить</button>
       <button id="closeCreate">✖</button>
