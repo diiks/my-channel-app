@@ -9,7 +9,7 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
 
 body{
-  background:#004d33;
+  background:#3c3a46;
   color:white;
   min-height:100vh;
 }
@@ -49,7 +49,7 @@ main{
 
 /* PREVIEW */
 .note{
-  background:#353839;
+  background:#708090;
   width:100%;
   min-height:90px;
   border-radius:20px;
@@ -71,7 +71,7 @@ main{
   height:64px;
   border-radius:50%;
   background:#000;
-  color:#004d33;
+  color:#3c3a46;
   font-size:36px;
   border:none;
 }
@@ -207,25 +207,25 @@ textarea{
 </div>
 
 <script>
-let notes=JSON.parse(localStorage.getItem('notes')||'[]');
-let current=null;
-let mediaArr=[];
+let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+let current = null;
+let mediaArr = [];
 
-const notesEl=document.getElementById('notes');
-const modal=document.getElementById('modal');
-const titleInput=document.getElementById('title');
-const textInput=document.getElementById('text');
-const mediaInput=document.getElementById('media');
-const mediaList=document.getElementById('mediaList');
-const viewTitle=document.getElementById('viewTitle');
-const viewText=document.getElementById('viewText');
+const notesEl = document.getElementById('notes');
+const modal = document.getElementById('modal');
+const titleInput = document.getElementById('title');
+const textInput = document.getElementById('text');
+const mediaInput = document.getElementById('media');
+const mediaList = document.getElementById('mediaList');
+const viewTitle = document.getElementById('viewTitle');
+const viewText = document.getElementById('viewText');
 
 function render(){
   notesEl.innerHTML='';
   notes.forEach((n,i)=>{
     const d=document.createElement('div');
     d.className='note';
-    d.textContent=n.title;
+    d.textContent=n.title || '(без темы)';
     d.onclick=()=>openNote(i);
     notesEl.appendChild(d);
   });
@@ -234,12 +234,14 @@ function render(){
 function openNote(i){
   current=i;
   const n=notes[i];
-  titleInput.value=n.title;
-  textInput.value=n.text;
-  viewTitle.textContent=n.title;
-  viewText.textContent=n.text;
-  mediaArr=[...n.media];
+  titleInput.value=n.title||'';
+  textInput.value=n.text||'';
+  viewTitle.textContent=n.title||'';
+  viewText.textContent=n.text||'';
+
+  mediaArr = Array.isArray(n.media) ? [...n.media] : [];
   drawMedia();
+
   modal.classList.add('active');
 }
 
@@ -258,8 +260,12 @@ document.getElementById('close').onclick=()=>modal.classList.remove('active');
 
 document.getElementById('save').onclick=()=>{
   if(!titleInput.value.trim())return;
-  const note={title:titleInput.value,text:textInput.value,media:mediaArr};
-  current!==null?notes[current]=note:notes.push(note);
+  const note={
+    title:titleInput.value,
+    text:textInput.value,
+    media:mediaArr
+  };
+  current!==null ? notes[current]=note : notes.push(note);
   localStorage.setItem('notes',JSON.stringify(notes));
   modal.classList.remove('active');
   render();
@@ -287,9 +293,9 @@ function drawMedia(){
     d.className='media-item';
     d.innerHTML=
       (m.type.startsWith('image')
-      ?`<img src="${m.url}">`
-      :`<video src="${m.url}" controls></video>`)
-      +`<button onclick="removeMedia(${i})">✖</button>`;
+      ? `<img src="${m.url}">`
+      : `<video src="${m.url}" controls></video>`)
+      + `<button onclick="removeMedia(${i})">✖</button>`;
     mediaList.appendChild(d);
   });
 }
@@ -299,25 +305,26 @@ window.removeMedia=i=>{
   drawMedia();
 };
 
-/* SEARCH (НЕ ЛОМАЕТ ДОСТУП) */
+/* SEARCH — НЕ ЛОМАЕТ ДОСТУП */
 document.querySelector('.search').oninput=e=>{
   const q=e.target.value.toLowerCase();
   [...notesEl.children].forEach((el,i)=>{
     const n=notes[i];
-    el.style.display=
-      n.title.toLowerCase().includes(q)||
-      n.text.toLowerCase().includes(q)
-      ?'flex':'none';
+    el.style.display =
+      (n.title||'').toLowerCase().includes(q) ||
+      (n.text||'').toLowerCase().includes(q)
+        ? 'flex'
+        : 'none';
   });
 };
 
-/* SWIPE TO CLOSE */
+/* SWIPE LEFT TO CLOSE */
 let startX=0;
 document.getElementById('card').addEventListener('touchstart',e=>{
   startX=e.touches[0].clientX;
 });
 document.getElementById('card').addEventListener('touchend',e=>{
-  if(e.changedTouches[0].clientX-startX<-80)
+  if(e.changedTouches[0].clientX-startX < -80)
     modal.classList.remove('active');
 });
 
