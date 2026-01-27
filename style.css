@@ -10,6 +10,7 @@ header {
   background: black;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   position: relative;
 }
 
@@ -19,12 +20,31 @@ header h1 {
   margin: 0;
 }
 
+#folderContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#folderContainer select {
+  border-radius: 8px;
+  border: none;
+  padding: 4px 8px;
+  background: black;
+  color: white;
+}
+
+#folderContainer button {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 8px;
+  background: black;
+  color: white;
+  cursor: pointer;
+}
+
 #search {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 200px;
+  width: 150px;
   padding: 6px 10px;
   border-radius: 10px;
   border: none;
@@ -40,7 +60,6 @@ header h1 {
   gap: 10px;
 }
 
-/* Превью заметки */
 .note-preview {
   width: 120px;
   height: 120px;
@@ -70,15 +89,13 @@ header h1 {
   color: #ccc;
 }
 
-/* Модальное окно (чатовый стиль) */
+/* Модальное окно */
 .hidden { display: none; }
 
-#modalOverlay {
+#modalOverlay, #themeModal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: rgba(0,0,0,0.8);
   display: flex;
   align-items: center;
@@ -87,10 +104,7 @@ header h1 {
   animation: fadeIn 0.3s;
 }
 
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
-}
+@keyframes fadeIn { from {opacity:0;} to{opacity:1;} }
 
 .modal {
   background: black;
@@ -104,10 +118,7 @@ header h1 {
   animation: slideUp 0.3s;
 }
 
-@keyframes slideUp {
-  from {transform: translateY(50px);}
-  to {transform: translateY(0);}
-}
+@keyframes slideUp { from {transform:translateY(50px);} to {transform:translateY(0);} }
 
 .modal-header {
   display: flex;
@@ -116,23 +127,15 @@ header h1 {
   font-size: 12px;
 }
 
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px;
-  background: #111;
-  border-radius: 12px 12px 0 0;
-}
+.modal-body { flex: 1; overflow-y: auto; padding: 8px; background: #111; border-radius: 12px 12px 0 0; }
 
-.modal-body textarea {
+.modal-body textarea, .modal-body input, .modal-body select {
   width: 100%;
-  height: 150px;
   padding: 8px;
   border-radius: 12px;
   border: none;
   background: #222;
   color: white;
-  resize: none;
   font-size: 14px;
 }
 
@@ -142,6 +145,7 @@ header h1 {
   padding: 8px;
   background: #111;
   border-radius: 0 0 12px 12px;
+  gap: 6px;
 }
 
 .modal-footer button {
@@ -151,7 +155,6 @@ header h1 {
   background: black;
   color: white;
   cursor: pointer;
-  margin-right: 6px;
 }
 
 #addPost {
