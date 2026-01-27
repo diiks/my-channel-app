@@ -7,22 +7,38 @@
 </head>
 <body>
 
-<header>
-  <h1>DIX</h1>
-  <button id="addBtn">+</button>
+<header class="top-bar">
+  <div class="logo">DIX</div>
+  <input id="search" placeholder="Поиск">
 </header>
 
-<div id="notes"></div>
+<button id="addBtn" class="add-btn">+</button>
 
-<!-- МОДАЛКА -->
-<div id="modal" class="modal hidden">
-  <div class="modal-content">
-    <button id="closeModal">✖</button>
+<div id="notesContainer" class="notes-grid"></div>
 
-    <input id="noteTopic" placeholder="Тема">
-    <textarea id="noteText" placeholder="Текст заметки"></textarea>
+<!-- МОДАЛКА 1 — ТЕМА -->
+<div id="topicModal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Тема</h2>
+    <input id="topicInput" placeholder="Введите тему">
+    <button id="goToText">Далее</button>
+    <button class="close" id="closeTopic">✖</button>
+  </div>
+</div>
 
-    <button id="saveNote">Сохранить</button>
+<!-- МОДАЛКА 2 — ЗАМЕТКА -->
+<div id="noteModal" class="modal hidden">
+  <div class="modal-box full">
+    <div class="note-body">
+      <textarea id="noteText" placeholder="Введите заметку..."></textarea>
+    </div>
+
+    <div class="note-actions">
+      <button id="addLink">🔗</button>
+      <button id="addMedia">📷</button>
+      <button id="saveNote">Сохранить</button>
+      <button class="close" id="closeNote">✖</button>
+    </div>
   </div>
 </div>
 
