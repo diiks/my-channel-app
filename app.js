@@ -1,45 +1,35 @@
 const addBtn = document.getElementById('addBtn');
-
 const topicModal = document.getElementById('topicModal');
 const noteModal = document.getElementById('noteModal');
 
 const topicInput = document.getElementById('topicInput');
 const noteText = document.getElementById('noteText');
+const searchInput = document.getElementById('search');
 
 const goToText = document.getElementById('goToText');
 const saveNote = document.getElementById('saveNote');
-
 const closeTopic = document.getElementById('closeTopic');
 const closeNote = document.getElementById('closeNote');
+const deleteNoteBtn = document.getElementById('deleteNote');
 
 const notesContainer = document.getElementById('notesContainer');
 
 let notes = JSON.parse(localStorage.getItem('dixNotes')) || [];
-let tempTopic = null;
+let tempTopic = '';
 let editingIndex = null;
 
-// гарантированно скрыты при старте
 topicModal.classList.add('hidden');
 noteModal.classList.add('hidden');
 
-// открыть ввод темы
 addBtn.onclick = () => {
-  tempTopic = null;
   topicInput.value = '';
   topicModal.classList.remove('hidden');
 };
 
-// закрыть тему
-closeTopic.onclick = () => {
-  topicModal.classList.add('hidden');
-};
+closeTopic.onclick = () => topicModal.classList.add('hidden');
 
-// подтвердить тему
 goToText.onclick = () => {
-  if (!topicInput.value.trim()) {
-    alert('Введите тему');
-    return;
-  }
+  if (!topicInput.value.trim()) return alert('Введите тему');
   tempTopic = topicInput.value.trim();
   topicModal.classList.add('hidden');
   noteText.value = '';
@@ -47,34 +37,45 @@ goToText.onclick = () => {
   noteModal.classList.remove('hidden');
 };
 
-// закрыть заметку БЕЗ сохранения
-closeNote.onclick = () => {
-  noteModal.classList.add('hidden');
-};
+closeNote.onclick = () => noteModal.classList.add('hidden');
 
-// сохранить заметку
 saveNote.onclick = () => {
   if (!noteText.value.trim()) return;
 
-  const note = {
-    topic: tempTopic,
-    text: noteText.value,
-    date: new Date().toLocaleDateString()
-  };
+  if (editingIndex !== null) {
+    notes[editingIndex].text = noteText.value;
+  } else {
+    notes.push({
+      topic: tempTopic,
+      text: noteText.value,
+      date: new Date().toLocaleDateString()
+    });
+  }
 
-  notes.push(note);
   localStorage.setItem('dixNotes', JSON.stringify(notes));
-  renderNotes();
   noteModal.classList.add('hidden');
+  renderNotes();
 };
 
-// рендер
-function renderNotes() {
+function deleteNote() {
+  if (editingIndex === null) return;
+  notes.splice(editingIndex, 1);
+  localStorage.setItem('dixNotes', JSON.stringify(notes));
+  noteModal.classList.add('hidden');
+  renderNotes();
+}
+
+function renderNotes(filter = '') {
   notesContainer.innerHTML = '';
   notes.forEach((note, index) => {
+    if (
+      !note.topic.toLowerCase().includes(filter) &&
+      !note.text.toLowerCase().includes(filter)
+    ) return;
+
     const div = document.createElement('div');
     div.className = 'note-preview';
-    div.innerHTML = `<span>${note.date}</span>${note.topic}`;
+    div.innerHTML = `<div class="date">${note.date}</div>${note.topic}`;
     div.onclick = () => openNote(index);
     notesContainer.appendChild(div);
   });
@@ -86,5 +87,9 @@ function openNote(index) {
   noteText.value = notes[index].text;
   noteModal.classList.remove('hidden');
 }
+
+searchInput.oninput = e => {
+  renderNotes(e.target.value.toLowerCase());
+};
 
 renderNotes();
