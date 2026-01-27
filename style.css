@@ -90,6 +90,12 @@ body {
   gap: 14px;
 }
 
+/* карточка просмотра */
+.view-card {
+  max-height: 85vh;
+}
+
+/* ПОЛЯ */
 .card input,
 .card textarea {
   background: #222;
@@ -105,16 +111,23 @@ body {
   resize: none;
 }
 
-/* МЕДИА */
-.media-btn {
-  background: #222;
-  border: 1px dashed #555;
-  border-radius: 16px;
-  padding: 12px;
-  text-align: center;
-  cursor: pointer;
+/* ТЕКСТ ЗАМЕТКИ */
+.view-text {
+  font-size: 22px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  padding: 12px 4px;
+  overflow-y: auto;
+  max-height: 45vh;
 }
 
+/* ТЕМА */
+.small-title {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* МЕДИА */
 #mediaPreview img,
 #mediaPreview video,
 #viewMedia img,
@@ -122,17 +135,6 @@ body {
   width: 100%;
   border-radius: 18px;
   margin-top: 10px;
-}
-
-/* ПРОСМОТР */
-.big-text {
-  font-size: 22px;
-  white-space: pre-wrap;
-}
-
-.small-title {
-  font-size: 14px;
-  opacity: 0.7;
 }
 
 /* КНОПКИ */
