@@ -28,7 +28,7 @@
   <div class="modal">
     <div class="modal-header">
       <span>Введите тему заметки</span>
-      <button id="closeThemeModal">&times;</button>
+      <button id="closeThemeModal">×</button>
     </div>
     <div class="modal-body">
       <input type="text" id="noteTopic" placeholder="Тема заметки">
@@ -45,7 +45,7 @@
   <div class="modal">
     <div class="modal-header">
       <span id="modalDate"></span>
-      <button id="closeModal">&times;</button>
+      <button id="closeModal">×</button>
     </div>
     <div class="modal-body">
       <textarea id="noteText" placeholder="Напишите заметку..."></textarea>
@@ -72,6 +72,8 @@
 
 <!-- Список заметок -->
 <div id="notes-list"></div>
+
+<button id="open-modal">Открыть модальное окно</button>
 
 <script src="app.js"></script>
 
@@ -128,7 +130,7 @@
     });
 
     // Обработчик открытия модального окна
-    document.querySelector('.open-modal').addEventListener('click', function() {
+    document.getElementById('open-modal').addEventListener('click', function() {
         document.getElementById('note-modal').style.display = 'block';
     });
 
