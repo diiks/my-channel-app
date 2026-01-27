@@ -23,83 +23,12 @@
 
 <button id="addPost">+</button>
 
-<!-- Модальное окно темы -->
-<div id="themeModal" class="hidden">
-  <div class="modal">
-    <div class="modal-header">
-      <span>Введите тему заметки</span>
-      <button id="closeThemeModal">×</button>
-    </div>
-    <div class="modal-body">
-      <input type="text" id="noteTopic" placeholder="Тема заметки">
-      <select id="noteFolder"></select>
-    </div>
-    <div class="modal-footer">
-      <button id="confirmTopic">Далее</button>
-    </div>
-  </div>
-</div>
-
-<!-- Модальное окно текста/медиа -->
-<div id="modalOverlay" class="hidden">
-  <div class="modal">
-    <div class="modal-header">
-      <span id="modalDate"></span>
-      <button id="closeModal">×</button>
-    </div>
-    <div class="modal-body">
-      <textarea id="noteText" placeholder="Напишите заметку..."></textarea>
-    </div>
-    <div class="modal-footer">
-      <button id="addLink">🔗</button>
-      <input type="file" id="fileInput" accept="image/*,video/*,.pdf" hidden>
-      <button id="addMedia">📷</button>
-      <button id="saveNote">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<!-- Модальное окно для создания заметки -->
-<div id="note-modal" style="display:none">
-    <h2>Новая заметка</h2>
-    <form id="note-form">
-        <input type="text" placeholder="Название заметки" required />
-        <textarea placeholder="Содержание заметки"></textarea>
-        <button type="submit">Создать</button>
-        <span class="close">×</span>
-    </form>
-</div>
-
 <!-- Список заметок -->
 <div id="notes-list"></div>
-
-<button id="open-modal">Открыть модальное окно</button>
 
 <script src="app.js"></script>
 
 <script>
-    // Обработчик отправки формы
-    document.getElementById('note-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const title = this.elements[0].value.trim(); // Название заметки
-        const content = this.elements[1].value.trim(); // Содержимое заметки
-
-        if (!title || !content) return; // Проверка заполнения полей
-
-        saveNote(title, content); // Сохраняем заметку
-        displayNotes(); // Показываем обновленный список заметок
-        clearForm(); // Очищаем форму
-        closeModal(); // Закрываем модальное окно
-    });
-
-    // Функция для сохранения заметки
-    function saveNote(title, content) {
-        let notes = JSON.parse(localStorage.getItem('notes')) || [];
-        notes.push({ title, content });
-        localStorage.setItem('notes', JSON.stringify(notes));
-    }
-
     // Функция для отображения заметок
     function displayNotes() {
         const notesList = document.getElementById('notes-list');
@@ -114,29 +43,9 @@
         });
     }
 
-    // Функция для очистки формы
-    function clearForm() {
-        document.getElementById('note-form').reset();
-    }
-
-    // Функция для закрытия модального окна
-    function closeModal() {
-        document.getElementById('note-modal').style.display = 'none';
-    }
-
     // Инициализация отображения заметок при загрузке страницы
     window.addEventListener('load', () => {
         displayNotes();
-    });
-
-    // Обработчик открытия модального окна
-    document.getElementById('open-modal').addEventListener('click', function() {
-        document.getElementById('note-modal').style.display = 'block';
-    });
-
-    // Обработчик закрытия модального окна
-    document.querySelector('.close').addEventListener('click', function() {
-        document.getElementById('note-modal').style.display = 'none';
     });
 </script>
 
