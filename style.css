@@ -11,7 +11,6 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: relative;
 }
 
 header h1 {
@@ -89,7 +88,6 @@ header h1 {
   color: #ccc;
 }
 
-/* Модальное окно */
 .hidden { display: none; }
 
 #modalOverlay, #themeModal {
@@ -101,10 +99,7 @@ header h1 {
   align-items: center;
   justify-content: center;
   z-index: 100;
-  animation: fadeIn 0.3s;
 }
-
-@keyframes fadeIn { from {opacity:0;} to{opacity:1;} }
 
 .modal {
   background: black;
@@ -115,10 +110,7 @@ header h1 {
   flex-direction: column;
   color: white;
   max-height: 80%;
-  animation: slideUp 0.3s;
 }
-
-@keyframes slideUp { from {transform:translateY(50px);} to {transform:translateY(0);} }
 
 .modal-header {
   display: flex;
