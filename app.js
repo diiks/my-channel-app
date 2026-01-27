@@ -1,3 +1,4 @@
+// === Элементы DOM ===
 const addPostBtn = document.getElementById('addPost');
 const themeModal = document.getElementById('themeModal');
 const closeThemeModal = document.getElementById('closeThemeModal');
@@ -5,6 +6,9 @@ const confirmTopic = document.getElementById('confirmTopic');
 const noteTopic = document.getElementById('noteTopic');
 const noteFolderSelect = document.getElementById('noteFolder');
 const folderSelect = document.getElementById('folderSelect');
+const addFolderBtn = document.getElementById('addFolder');
+const editFolderBtn = document.getElementById('editFolder');
+const deleteFolderBtn = document.getElementById('deleteFolder');
 
 const modalOverlay = document.getElementById('modalOverlay');
 const closeModal = document.getElementById('closeModal');
@@ -16,13 +20,14 @@ const addMediaBtn = document.getElementById('addMedia');
 const fileInput = document.getElementById('fileInput');
 const modalDate = document.getElementById('modalDate');
 
+// === Данные ===
 let notes = JSON.parse(localStorage.getItem('dixNotes')) || [];
 let folders = JSON.parse(localStorage.getItem('dixFolders')) || ['Без категории'];
 let editingIndex = null;
 let tempTopic = '';
 let tempFolder = 'Без категории';
 
-// === Рендер папок ===
+// === Функции рендера ===
 function renderFolders() {
   folderSelect.innerHTML = '';
   noteFolderSelect.innerHTML = '';
@@ -39,7 +44,6 @@ function renderFolders() {
   });
 }
 
-// === Рендер заметок ===
 function renderNotes() {
   notesContainer.innerHTML = '';
   const currentFolder = folderSelect.value;
@@ -53,7 +57,41 @@ function renderNotes() {
   });
 }
 
-// === Открытие темы заметки перед полным модальным окном ===
+// === Папки ===
+addFolderBtn.addEventListener('click', () => {
+  const name = prompt('Название новой папки:');
+  if (!name || folders.includes(name)) return alert('Неверное имя!');
+  folders.push(name);
+  localStorage.setItem('dixFolders', JSON.stringify(folders));
+  renderFolders();
+  renderNotes();
+});
+
+editFolderBtn.addEventListener('click', () => {
+  const oldName = folderSelect.value;
+  const newName = prompt('Новое имя папки:', oldName);
+  if (!newName || folders.includes(newName)) return alert('Неверное имя!');
+  folders = folders.map(f => f === oldName ? newName : f);
+  notes = notes.map(n => n.folder === oldName ? {...n, folder: newName} : n);
+  localStorage.setItem('dixFolders', JSON.stringify(folders));
+  localStorage.setItem('dixNotes', JSON.stringify(notes));
+  renderFolders();
+  renderNotes();
+});
+
+deleteFolderBtn.addEventListener('click', () => {
+  const name = folderSelect.value;
+  if (name === 'Без категории') return alert('Эту папку нельзя удалить!');
+  if (!confirm(`Удалить папку "${name}" и все заметки в ней?`)) return;
+  folders = folders.filter(f => f !== name);
+  notes = notes.filter(n => n.folder !== name);
+  localStorage.setItem('dixFolders', JSON.stringify(folders));
+  localStorage.setItem('dixNotes', JSON.stringify(notes));
+  renderFolders();
+  renderNotes();
+});
+
+// === Создание новой заметки (тема) ===
 addPostBtn.addEventListener('click', () => {
   noteTopic.value = '';
   noteFolderSelect.value = folderSelect.value;
@@ -67,10 +105,10 @@ confirmTopic.addEventListener('click', () => {
   tempTopic = noteTopic.value.trim();
   tempFolder = noteFolderSelect.value;
   themeModal.classList.add('hidden');
-  openModal(); // открываем полное модальное окно для текста
+  openModal();
 });
 
-// === Модальное окно для текста/медиа ===
+// === Модальное окно текста/медиа ===
 function openModal(index=null) {
   modalOverlay.classList.remove('hidden');
   if (index !== null) {
@@ -106,14 +144,13 @@ saveNoteBtn.addEventListener('click', () => {
   renderNotes();
 });
 
-// === Работа с ссылками и медиа ===
+// === Ссылки и медиа ===
 addLinkBtn.addEventListener('click', () => {
   const url = prompt('Вставьте ссылку (URL):');
   if (url) noteText.value += ` ${url}`;
 });
 
 addMediaBtn.addEventListener('click', () => fileInput.click());
-
 fileInput.addEventListener('change', (event) => {
   const files = event.target.files;
   Array.from(files).forEach(file => {
@@ -126,7 +163,7 @@ fileInput.addEventListener('change', (event) => {
   });
 });
 
-// === Выбор папки для фильтрации ===
+// === Фильтр по папкам ===
 folderSelect.addEventListener('change', renderNotes);
 
 // === Инициализация ===
