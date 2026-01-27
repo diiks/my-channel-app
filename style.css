@@ -1,6 +1,4 @@
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -9,52 +7,54 @@ body {
   color: white;
 }
 
-/* ===== ШАПКА ===== */
+/* ШАПКА */
 .top-bar {
   background: black;
-  padding: 16px 18px;
+  padding: 18px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
 .logo {
+  font-size: 32px;
+  font-weight: 800;
   color: #39ff14;
-  font-size: 30px;
-  font-weight: 700;
 }
 
 #search {
   background: #111;
   color: white;
   border: none;
-  border-radius: 18px;
-  padding: 10px 16px;
+  border-radius: 20px;
+  padding: 12px 18px;
   font-size: 16px;
-  width: 170px;
+  width: 180px;
 }
 
-/* ===== ОСНОВА ===== */
-.main {
-  max-width: 520px;
-  margin: 0 auto;
+/* ПАПКИ */
+.folders {
+  display: flex;
+  gap: 10px;
+  padding: 12px 18px;
+  justify-content: center;
 }
 
-/* ===== ПЛЮС ===== */
-.add-btn {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
+.folders select,
+.folders button {
   background: black;
-  color: #004d33;
-  font-size: 38px;
+  color: white;
+  border-radius: 14px;
+  padding: 8px 12px;
   border: none;
 }
 
-/* ===== ПРЕВЬЮ ===== */
+/* ОСНОВА */
+.main {
+  max-width: 520px;
+  margin: auto;
+}
+
 .notes-grid {
   padding: 20px;
   display: grid;
@@ -62,11 +62,12 @@ body {
   gap: 16px;
 }
 
+/* ПРЕВЬЮ */
 .note-preview {
   background: black;
-  border-radius: 24px;
-  padding: 20px;
-  font-size: 18px;
+  border-radius: 22px;
+  padding: 22px;
+  font-size: 20px;
   position: relative;
 }
 
@@ -78,7 +79,21 @@ body {
   opacity: 0.6;
 }
 
-/* ===== МОДАЛКА ===== */
+/* ПЛЮС */
+.add-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: black;
+  color: #004d33;
+  font-size: 40px;
+  border: none;
+}
+
+/* МОДАЛКА */
 .modal {
   position: fixed;
   inset: 0;
@@ -88,55 +103,36 @@ body {
   align-items: center;
 }
 
-.hidden {
-  display: none;
-}
+.hidden { display: none; }
 
 .modal-box {
   background: black;
   border-radius: 26px;
   padding: 20px;
-  width: 90%;
+  width: 92%;
   max-width: 420px;
-}
-
-.modal-box.full {
-  height: 75vh;
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
-/* ===== ПОЛЕ ВВОДА ===== */
-.note-body {
-  flex: 1;
-}
-
-.note-body textarea {
-  width: 100%;
-  height: 100%;
+.modal-box input,
+.modal-box textarea,
+.modal-box select {
   background: #111;
   color: white;
   border: none;
-  border-radius: 22px;
-  padding: 18px;
-  font-size: 18px;
+  border-radius: 18px;
+  padding: 14px;
+  font-size: 16px;
+}
+
+.modal-box textarea {
+  height: 40vh;
   resize: none;
 }
 
-/* ===== КНОПКИ ===== */
 .note-actions {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-top: 16px;
-}
-
-.note-actions button,
-.media-btn {
-  background: black;
-  color: white;
-  border: 1px solid #555;
-  border-radius: 16px;
-  padding: 10px 16px;
-  font-size: 16px;
 }
