@@ -10,39 +10,38 @@
 
 <header class="top-bar">
   <div class="logo">DIX</div>
-  <input type="text" id="search" placeholder="Поиск">
+  <input id="search" placeholder="Поиск">
 </header>
-
-<div class="folders">
-  <select id="folderFilter"></select>
-  <button id="addFolder">+ папка</button>
-</div>
 
 <main class="main">
   <div id="notes" class="notes-grid"></div>
 </main>
 
-<button class="add-btn" id="openModal">+</button>
+<button id="openCreate" class="add-btn">+</button>
 
-<!-- МОДАЛКА -->
-<div class="modal hidden" id="noteModal">
-  <div class="modal-box full">
-
+<!-- СОЗДАНИЕ / РЕДАКТИРОВАНИЕ -->
+<div class="modal hidden" id="createModal">
+  <div class="card">
     <input id="noteTitle" placeholder="Тема заметки">
-
-    <select id="noteFolder"></select>
-
     <textarea id="noteText" placeholder="Текст заметки"></textarea>
 
-    <div class="note-actions">
-      <label class="media-btn">
-        📷
-        <input type="file" id="mediaInput" accept="image/*,video/*" hidden>
-      </label>
+    <div class="actions">
       <button id="saveNote">Сохранить</button>
-      <button id="closeModal">✖</button>
+      <button id="closeCreate">✖</button>
     </div>
+  </div>
+</div>
 
+<!-- ПРОСМОТР -->
+<div class="modal hidden" id="viewModal">
+  <div class="card">
+    <h2 id="viewTitle"></h2>
+    <div id="viewText" class="view-text"></div>
+
+    <div class="actions">
+      <button id="editNote">Редактировать</button>
+      <button id="closeView">✖</button>
+    </div>
   </div>
 </div>
 
