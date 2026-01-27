@@ -1,53 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DIX</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>DIX</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
   <h1>DIX</h1>
-  <div id="folderContainer">
-    <select id="folderSelect"></select>
-    <button id="addFolder">➕</button>
-    <button id="editFolder">✏️</button>
-    <button id="deleteFolder">🗑️</button>
-  </div>
-  <input type="text" id="search" placeholder="Поиск...">
+  <button id="addBtn">+</button>
 </header>
 
-<main id="notesContainer"></main>
+<div id="notes"></div>
 
-<button id="addPost">+</button>
+<!-- МОДАЛКА -->
+<div id="modal" class="modal hidden">
+  <div class="modal-content">
+    <button id="closeModal">✖</button>
 
-<!-- Список заметок -->
-<div id="notes-list"></div>
+    <input id="noteTopic" placeholder="Тема">
+    <textarea id="noteText" placeholder="Текст заметки"></textarea>
+
+    <button id="saveNote">Сохранить</button>
+  </div>
+</div>
 
 <script src="app.js"></script>
-
-<script>
-    // Функция для отображения заметок
-    function displayNotes() {
-        const notesList = document.getElementById('notes-list');
-        notesList.innerHTML = '';
-
-        const notes = JSON.parse(localStorage.getItem('notes')) || [];
-        notes.forEach(note => {
-            const noteDiv = document.createElement('div');
-            noteDiv.className = 'note-item';
-            noteDiv.textContent = `${note.title}: ${note.content}`;
-            notesList.appendChild(noteDiv);
-        });
-    }
-
-    // Инициализация отображения заметок при загрузке страницы
-    window.addEventListener('load', () => {
-        displayNotes();
-    });
-</script>
-
 </body>
 </html>
