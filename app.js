@@ -10,6 +10,8 @@ const noteText = document.getElementById('noteText');
 const viewTitle = document.getElementById('viewTitle');
 const viewText = document.getElementById('viewText');
 
+const deleteNoteBtn = document.getElementById('deleteNote');
+
 let notes = JSON.parse(localStorage.getItem('notes')) || [];
 let currentIndex = null;
 
@@ -45,6 +47,21 @@ saveNote.onclick = () => {
   renderNotes();
 };
 
+/* УДАЛЕНИЕ */
+deleteNoteBtn.onclick = () => {
+  if (currentIndex === null) return;
+
+  const ok = confirm('Удалить заметку?');
+  if (!ok) return;
+
+  notes.splice(currentIndex, 1);
+  localStorage.setItem('notes', JSON.stringify(notes));
+
+  viewModal.classList.add('hidden');
+  currentIndex = null;
+  renderNotes();
+};
+
 /* РЕНДЕР */
 function renderNotes() {
   notesEl.innerHTML = '';
@@ -71,7 +88,10 @@ function renderNotes() {
   });
 }
 
-closeView.onclick = () => viewModal.classList.add('hidden');
+closeView.onclick = () => {
+  viewModal.classList.add('hidden');
+  currentIndex = null;
+};
 
 editNote.onclick = () => {
   viewModal.classList.add('hidden');
