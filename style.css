@@ -35,10 +35,10 @@ body {
 .main {
   max-width: 520px;
   margin: auto;
+  padding: 20px;
 }
 
 .notes-grid {
-  padding: 20px;
   display: grid;
   gap: 16px;
 }
@@ -50,6 +50,7 @@ body {
   padding: 22px;
   font-size: 20px;
   cursor: pointer;
+  text-align: center;
 }
 
 /* ПЛЮС */
@@ -104,21 +105,36 @@ body {
   resize: none;
 }
 
-.view-text {
-  max-height: 60vh;
-  overflow-y: auto;
+/* ПРОСМОТР */
+.big-text {
+  font-size: 22px;
   white-space: pre-wrap;
 }
 
+.small-title {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* КНОПКИ */
 .actions {
   display: flex;
   justify-content: space-between;
   gap: 8px;
 }
 
-#deleteNote {
+.btn {
+  background: #333;
+  color: white;
+  border-radius: 14px;
+  padding: 8px 14px;
+  border: none;
+}
+
+.delete-btn {
   background: #333;
   color: #ff4d4d;
   border-radius: 14px;
   padding: 8px 14px;
+  border: none;
 }
