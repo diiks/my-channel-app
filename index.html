@@ -8,41 +8,44 @@
 </head>
 <body>
 
-  <!-- ШАПКА -->
-  <header class="top-bar">
-    <div class="logo">dix</div>
-    <input type="text" id="search" placeholder="Поиск">
-  </header>
+<header class="top-bar">
+  <div class="logo">DIX</div>
+  <input type="text" id="search" placeholder="Поиск">
+</header>
 
-  <!-- ОСНОВНОЙ КОНТЕНТ -->
-  <main class="main">
-    <div id="notes" class="notes-grid"></div>
-  </main>
+<div class="folders">
+  <select id="folderFilter"></select>
+  <button id="addFolder">+ папка</button>
+</div>
 
-  <!-- ПЛЮС -->
-  <button class="add-btn" id="openModal">+</button>
+<main class="main">
+  <div id="notes" class="notes-grid"></div>
+</main>
 
-  <!-- МОДАЛКА -->
-  <div class="modal hidden" id="noteModal">
-    <div class="modal-box full">
+<button class="add-btn" id="openModal">+</button>
 
-      <div class="note-body">
-        <textarea id="noteText" placeholder="Твоя заметка..."></textarea>
-      </div>
+<!-- МОДАЛКА -->
+<div class="modal hidden" id="noteModal">
+  <div class="modal-box full">
 
-      <div class="note-actions">
-        <label class="media-btn">
-          📷
-          <input type="file" id="mediaInput" accept="image/*" hidden>
-        </label>
+    <input id="noteTitle" placeholder="Тема заметки">
 
-        <button id="saveNote">Сохранить</button>
-        <button id="closeModal">✖</button>
-      </div>
+    <select id="noteFolder"></select>
 
+    <textarea id="noteText" placeholder="Текст заметки"></textarea>
+
+    <div class="note-actions">
+      <label class="media-btn">
+        📷
+        <input type="file" id="mediaInput" accept="image/*,video/*" hidden>
+      </label>
+      <button id="saveNote">Сохранить</button>
+      <button id="closeModal">✖</button>
     </div>
-  </div>
 
-  <script src="app.js"></script>
+  </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
