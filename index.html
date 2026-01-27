@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DIX</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIX</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -19,15 +19,14 @@
 
 <button id="openCreate" class="add-btn">+</button>
 
-<!-- СОЗДАНИЕ / РЕДАКТИРОВАНИЕ -->
+<!-- СОЗДАНИЕ -->
 <div class="modal hidden" id="createModal">
   <div class="card">
-    <input id="noteTitle" placeholder="Тема заметки">
+    <input id="noteTitle" placeholder="Тема">
     <textarea id="noteText" placeholder="Текст заметки"></textarea>
-
     <div class="actions">
-      <button id="saveNote">Сохранить</button>
-      <button id="closeCreate">✖</button>
+      <button id="saveNote" class="btn">Сохранить</button>
+      <button id="closeCreate" class="btn">✖</button>
     </div>
   </div>
 </div>
@@ -35,13 +34,13 @@
 <!-- ПРОСМОТР -->
 <div class="modal hidden" id="viewModal">
   <div class="card">
-    <h2 id="viewTitle"></h2>
-    <div id="viewText" class="view-text"></div>
+    <div id="viewText" class="view-text big-text"></div>
+    <div id="viewTitle" class="small-title"></div>
 
     <div class="actions">
-      <button id="editNote">Редактировать</button>
-      <button id="deleteNote">Удалить</button>
-      <button id="closeView">✖</button>
+      <button id="editNote" class="btn">Редактировать</button>
+      <button id="deleteNote" class="delete-btn">Удалить</button>
+      <button id="closeView" class="btn">✖</button>
     </div>
   </div>
 </div>
