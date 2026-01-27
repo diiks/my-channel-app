@@ -49,8 +49,8 @@ body {
   border-radius: 20px;
   padding: 22px;
   font-size: 20px;
-  cursor: pointer;
   text-align: center;
+  cursor: pointer;
 }
 
 /* ПЛЮС */
@@ -101,8 +101,27 @@ body {
 }
 
 .card textarea {
-  min-height: 40vh;
+  min-height: 30vh;
   resize: none;
+}
+
+/* МЕДИА */
+.media-btn {
+  background: #222;
+  border: 1px dashed #555;
+  border-radius: 16px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+#mediaPreview img,
+#mediaPreview video,
+#viewMedia img,
+#viewMedia video {
+  width: 100%;
+  border-radius: 18px;
+  margin-top: 10px;
 }
 
 /* ПРОСМОТР */
