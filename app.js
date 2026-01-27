@@ -1,57 +1,90 @@
-document.addEventListener('DOMContentLoaded', () => {
+const addBtn = document.getElementById('addBtn');
 
-  const modal = document.getElementById('modal');
-  const addBtn = document.getElementById('addBtn');
-  const closeModal = document.getElementById('closeModal');
-  const saveNote = document.getElementById('saveNote');
+const topicModal = document.getElementById('topicModal');
+const noteModal = document.getElementById('noteModal');
 
-  const topicInput = document.getElementById('noteTopic');
-  const textInput = document.getElementById('noteText');
-  const notesContainer = document.getElementById('notes');
+const topicInput = document.getElementById('topicInput');
+const noteText = document.getElementById('noteText');
 
-  let notes = JSON.parse(localStorage.getItem('dixNotes')) || [];
+const goToText = document.getElementById('goToText');
+const saveNote = document.getElementById('saveNote');
 
-  // 🔒 ВАЖНО: гарантированно скрываем при загрузке
-  modal.classList.add('hidden');
+const closeTopic = document.getElementById('closeTopic');
+const closeNote = document.getElementById('closeNote');
 
-  // ➕ открыть модалку
-  addBtn.onclick = () => {
-    topicInput.value = '';
-    textInput.value = '';
-    modal.classList.remove('hidden');
-  };
+const notesContainer = document.getElementById('notesContainer');
 
-  // ❌ закрыть БЕЗ сохранения
-  closeModal.onclick = () => {
-    modal.classList.add('hidden');
-  };
+let notes = JSON.parse(localStorage.getItem('dixNotes')) || [];
+let tempTopic = null;
+let editingIndex = null;
 
-  // 💾 сохранить и закрыть
-  saveNote.onclick = () => {
-    if (!topicInput.value.trim()) {
-      alert('Введите тему');
-      return;
-    }
+// гарантированно скрыты при старте
+topicModal.classList.add('hidden');
+noteModal.classList.add('hidden');
 
-    notes.push({
-      topic: topicInput.value,
-      text: textInput.value,
-      date: new Date().toLocaleDateString()
-    });
+// открыть ввод темы
+addBtn.onclick = () => {
+  tempTopic = null;
+  topicInput.value = '';
+  topicModal.classList.remove('hidden');
+};
 
-    localStorage.setItem('dixNotes', JSON.stringify(notes));
-    renderNotes();
-    modal.classList.add('hidden');
-  };
+// закрыть тему
+closeTopic.onclick = () => {
+  topicModal.classList.add('hidden');
+};
 
-  function renderNotes() {
-    notesContainer.innerHTML = '';
-    notes.forEach(note => {
-      const div = document.createElement('div');
-      div.textContent = note.topic;
-      notesContainer.appendChild(div);
-    });
+// подтвердить тему
+goToText.onclick = () => {
+  if (!topicInput.value.trim()) {
+    alert('Введите тему');
+    return;
   }
+  tempTopic = topicInput.value.trim();
+  topicModal.classList.add('hidden');
+  noteText.value = '';
+  editingIndex = null;
+  noteModal.classList.remove('hidden');
+};
 
+// закрыть заметку БЕЗ сохранения
+closeNote.onclick = () => {
+  noteModal.classList.add('hidden');
+};
+
+// сохранить заметку
+saveNote.onclick = () => {
+  if (!noteText.value.trim()) return;
+
+  const note = {
+    topic: tempTopic,
+    text: noteText.value,
+    date: new Date().toLocaleDateString()
+  };
+
+  notes.push(note);
+  localStorage.setItem('dixNotes', JSON.stringify(notes));
   renderNotes();
-});
+  noteModal.classList.add('hidden');
+};
+
+// рендер
+function renderNotes() {
+  notesContainer.innerHTML = '';
+  notes.forEach((note, index) => {
+    const div = document.createElement('div');
+    div.className = 'note-preview';
+    div.innerHTML = `<span>${note.date}</span>${note.topic}`;
+    div.onclick = () => openNote(index);
+    notesContainer.appendChild(div);
+  });
+}
+
+function openNote(index) {
+  editingIndex = index;
+  tempTopic = notes[index].topic;
+  noteText.value = notes[index].text;
+  noteModal.classList.remove('hidden');
+}
+
+renderNotes();
