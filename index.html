@@ -24,6 +24,14 @@
   <div class="card">
     <input id="noteTitle" placeholder="Тема">
     <textarea id="noteText" placeholder="Текст заметки"></textarea>
+
+    <label class="media-btn">
+      📎 Добавить фото / видео
+      <input type="file" id="mediaInput" accept="image/*,video/mp4" hidden>
+    </label>
+
+    <div id="mediaPreview"></div>
+
     <div class="actions">
       <button id="saveNote" class="btn">Сохранить</button>
       <button id="closeCreate" class="btn">✖</button>
@@ -34,8 +42,9 @@
 <!-- ПРОСМОТР -->
 <div class="modal hidden" id="viewModal">
   <div class="card">
-    <div id="viewText" class="view-text big-text"></div>
+    <div id="viewText" class="big-text"></div>
     <div id="viewTitle" class="small-title"></div>
+    <div id="viewMedia"></div>
 
     <div class="actions">
       <button id="editNote" class="btn">Редактировать</button>
