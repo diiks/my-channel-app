@@ -95,19 +95,21 @@ deleteFolderBtn.addEventListener('click', () => {
 addPostBtn.addEventListener('click', () => {
   noteTopic.value = '';
   noteFolderSelect.value = folderSelect.value;
-  themeModal.classList.remove('hidden');
+  themeModal.classList.remove('hidden'); // окно темы открывается только при + 
 });
 
-// === Закрытие окна темы ===
-closeThemeModal.addEventListener('click', () => themeModal.classList.add('hidden'));
+// === Закрытие окна темы (крестик) ===
+closeThemeModal.addEventListener('click', () => {
+  themeModal.classList.add('hidden'); // закрываем без сохранения
+});
 
 // === Подтверждение темы ===
 confirmTopic.addEventListener('click', () => {
   if (!noteTopic.value.trim()) return alert('Введите тему!');
   tempTopic = noteTopic.value.trim();
   tempFolder = noteFolderSelect.value;
-  themeModal.classList.add('hidden');
-  openModal();
+  themeModal.classList.add('hidden'); // закрываем тему
+  openModal(); // открываем окно текста/медиа
 });
 
 // === Модальное окно текста/медиа ===
@@ -128,7 +130,7 @@ function openModal(index=null) {
   }
 }
 
-// === Закрытие окна текста ===
+// === Закрытие окна текста (крестик = отмена) ===
 closeModal.addEventListener('click', () => modalOverlay.classList.add('hidden'));
 
 // === Сохранение заметки ===
@@ -148,7 +150,7 @@ saveNoteBtn.addEventListener('click', () => {
 
   localStorage.setItem('dixNotes', JSON.stringify(notes));
   renderNotes();
-  modalOverlay.classList.add('hidden');
+  modalOverlay.classList.add('hidden'); // закрываем окно только после сохранения
 });
 
 // === Ссылки и медиа ===
