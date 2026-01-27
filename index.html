@@ -6,10 +6,15 @@
 <title>DIX</title>
 
 <style>
-* { box-sizing:border-box; margin:0; padding:0; font-family:system-ui; }
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
 
-body { background:#004d33; color:white; min-height:100vh; }
+body{
+  background:#004d33;
+  color:white;
+  min-height:100vh;
+}
 
+/* HEADER */
 header{
   background:#000;
   padding:18px;
@@ -33,7 +38,7 @@ header{
   color:white;
 }
 
-/* GRID */
+/* NOTES GRID */
 main{
   padding:18px;
   display:grid;
@@ -42,8 +47,9 @@ main{
   justify-items:center;
 }
 
+/* PREVIEW */
 .note{
-  background:#000;
+  background:#353839;
   width:100%;
   min-height:90px;
   border-radius:20px;
@@ -56,7 +62,7 @@ main{
   cursor:pointer;
 }
 
-/* ADD */
+/* ADD BUTTON */
 .add-btn{
   position:fixed;
   bottom:22px;
@@ -82,7 +88,7 @@ main{
   padding:30px 0;
 }
 
-.modal.active{ display:flex; }
+.modal.active{display:flex}
 
 .card{
   background:#0f0f0f;
@@ -95,6 +101,7 @@ main{
   gap:14px;
 }
 
+/* INPUTS */
 input,textarea{
   background:#1c1c1c;
   border:1px solid #333;
@@ -138,8 +145,12 @@ textarea{
   font-size:16px;
 }
 
-/* VIEW */
-.view-title{ font-size:14px; opacity:.6; }
+/* VIEW MODE */
+.view-title{
+  font-size:14px;
+  opacity:.6;
+}
+
 .view-text{
   font-size:22px;
   line-height:1.5;
@@ -161,7 +172,7 @@ textarea{
   color:white;
 }
 
-.delete{ background:#ff3b3b; }
+.delete{background:#ff3b3b}
 </style>
 </head>
 
@@ -196,12 +207,12 @@ textarea{
 </div>
 
 <script>
-let notes = JSON.parse(localStorage.getItem('notes')||'[]');
+let notes=JSON.parse(localStorage.getItem('notes')||'[]');
 let current=null;
 let mediaArr=[];
 
-const modal=document.getElementById('modal');
 const notesEl=document.getElementById('notes');
+const modal=document.getElementById('modal');
 const titleInput=document.getElementById('title');
 const textInput=document.getElementById('text');
 const mediaInput=document.getElementById('media');
@@ -247,11 +258,7 @@ document.getElementById('close').onclick=()=>modal.classList.remove('active');
 
 document.getElementById('save').onclick=()=>{
   if(!titleInput.value.trim())return;
-  const note={
-    title:titleInput.value,
-    text:textInput.value,
-    media:mediaArr
-  };
+  const note={title:titleInput.value,text:textInput.value,media:mediaArr};
   current!==null?notes[current]=note:notes.push(note);
   localStorage.setItem('notes',JSON.stringify(notes));
   modal.classList.remove('active');
@@ -268,10 +275,7 @@ document.getElementById('delete').onclick=()=>{
 
 mediaInput.onchange=()=>{
   [...mediaInput.files].forEach(f=>{
-    mediaArr.push({
-      type:f.type,
-      url:URL.createObjectURL(f)
-    });
+    mediaArr.push({type:f.type,url:URL.createObjectURL(f)});
   });
   drawMedia();
 };
@@ -279,14 +283,14 @@ mediaInput.onchange=()=>{
 function drawMedia(){
   mediaList.innerHTML='';
   mediaArr.forEach((m,i)=>{
-    const div=document.createElement('div');
-    div.className='media-item';
-    div.innerHTML=
+    const d=document.createElement('div');
+    d.className='media-item';
+    d.innerHTML=
       (m.type.startsWith('image')
       ?`<img src="${m.url}">`
       :`<video src="${m.url}" controls></video>`)
       +`<button onclick="removeMedia(${i})">✖</button>`;
-    mediaList.appendChild(div);
+    mediaList.appendChild(d);
   });
 }
 
@@ -295,7 +299,7 @@ window.removeMedia=i=>{
   drawMedia();
 };
 
-/* SEARCH */
+/* SEARCH (НЕ ЛОМАЕТ ДОСТУП) */
 document.querySelector('.search').oninput=e=>{
   const q=e.target.value.toLowerCase();
   [...notesEl.children].forEach((el,i)=>{
@@ -313,8 +317,8 @@ document.getElementById('card').addEventListener('touchstart',e=>{
   startX=e.touches[0].clientX;
 });
 document.getElementById('card').addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-startX;
-  if(dx<-80) modal.classList.remove('active');
+  if(e.changedTouches[0].clientX-startX<-80)
+    modal.classList.remove('active');
 });
 
 render();
