@@ -7,22 +7,51 @@ const viewModal = document.getElementById('viewModal');
 const noteTitle = document.getElementById('noteTitle');
 const noteText = document.getElementById('noteText');
 
+const mediaInput = document.getElementById('mediaInput');
+const mediaPreview = document.getElementById('mediaPreview');
+
 const viewTitle = document.getElementById('viewTitle');
 const viewText = document.getElementById('viewText');
+const viewMedia = document.getElementById('viewMedia');
 
 let notes = JSON.parse(localStorage.getItem('notes')) || [];
 let currentIndex = null;
+let currentMedia = null;
 
-/* ОТКРЫТИЕ СОЗДАНИЯ */
+/* ОТКРЫТИЕ */
 openCreate.onclick = () => {
   currentIndex = null;
+  currentMedia = null;
   noteTitle.value = '';
   noteText.value = '';
+  mediaPreview.innerHTML = '';
   createModal.classList.remove('hidden');
 };
 
 closeCreate.onclick = () => {
   createModal.classList.add('hidden');
+};
+
+/* МЕДИА */
+mediaInput.onchange = () => {
+  const file = mediaInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    currentMedia = {
+      type: file.type.startsWith('video') ? 'video' : 'image',
+      data: reader.result
+    };
+
+    mediaPreview.innerHTML = '';
+    if (currentMedia.type === 'image') {
+      mediaPreview.innerHTML = `<img src="${currentMedia.data}">`;
+    } else {
+      mediaPreview.innerHTML = `<video src="${currentMedia.data}" controls></video>`;
+    }
+  };
+  reader.readAsDataURL(file);
 };
 
 /* СОХРАНЕНИЕ */
@@ -31,14 +60,12 @@ saveNote.onclick = () => {
 
   const data = {
     title: noteTitle.value,
-    text: noteText.value
+    text: noteText.value,
+    media: currentMedia
   };
 
-  if (currentIndex !== null) {
-    notes[currentIndex] = data;
-  } else {
-    notes.unshift(data);
-  }
+  if (currentIndex !== null) notes[currentIndex] = data;
+  else notes.unshift(data);
 
   localStorage.setItem('notes', JSON.stringify(notes));
   createModal.classList.add('hidden');
@@ -59,8 +86,18 @@ function renderNotes() {
     div.textContent = n.title;
 
     div.onclick = () => {
-      viewText.textContent = n.text;   // БОЛЬШОЙ
-      viewTitle.textContent = n.title; // МАЛЕНЬКИЙ
+      viewText.textContent = n.text;
+      viewTitle.textContent = n.title;
+      viewMedia.innerHTML = '';
+
+      if (n.media) {
+        if (n.media.type === 'image') {
+          viewMedia.innerHTML = `<img src="${n.media.data}">`;
+        } else {
+          viewMedia.innerHTML = `<video src="${n.media.data}" controls></video>`;
+        }
+      }
+
       viewModal.classList.remove('hidden');
       currentIndex = i;
     };
@@ -76,8 +113,19 @@ closeView.onclick = () => {
 };
 
 editNote.onclick = () => {
-  noteTitle.value = notes[currentIndex].title;
-  noteText.value = notes[currentIndex].text;
+  const n = notes[currentIndex];
+  noteTitle.value = n.title;
+  noteText.value = n.text;
+  currentMedia = n.media || null;
+
+  mediaPreview.innerHTML = '';
+  if (currentMedia) {
+    mediaPreview.innerHTML =
+      currentMedia.type === 'image'
+        ? `<img src="${currentMedia.data}">`
+        : `<video src="${currentMedia.data}" controls></video>`;
+  }
+
   viewModal.classList.add('hidden');
   createModal.classList.remove('hidden');
 };
