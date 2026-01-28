@@ -196,44 +196,54 @@ textarea{
 </div>
 
 <script>
-let notes = JSON.parse(localStorage.getItem('notes')||'[]');
-let current=null;
-let mediaArr=[];
+let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+let current = null;
+let mediaArr = [];
 
-const modal=document.getElementById('modal');
-const notesEl=document.getElementById('notes');
-const titleInput=document.getElementById('title');
-const textInput=document.getElementById('text');
-const mediaInput=document.getElementById('media');
-const mediaList=document.getElementById('mediaList');
-const viewTitle=document.getElementById('viewTitle');
-const viewText=document.getElementById('viewText');
+const modal = document.getElementById('modal');
+const notesEl = document.getElementById('notes');
+const titleInput = document.getElementById('title');
+const textInput = document.getElementById('text');
+const mediaInput = document.getElementById('media');
+const mediaList = document.getElementById('mediaList');
+const viewTitle = document.getElementById('viewTitle');
+const viewText = document.getElementById('viewText');
 
-function render(){
+// Конвертация файла в Base64
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+});
+
+function render(filter = ''){
   notesEl.innerHTML='';
   notes.forEach((n,i)=>{
-    const d=document.createElement('div');
-    d.className='note';
-    d.textContent=n.title;
-    d.onclick=()=>openNote(i);
-    notesEl.appendChild(d);
+    if(n.title.toLowerCase().includes(filter) || n.text.toLowerCase().includes(filter)){
+      const d = document.createElement('div');
+      d.className = 'note';
+      d.textContent = n.title;
+      d.onclick = () => openNote(i);
+      notesEl.appendChild(d);
+    }
   });
 }
 
 function openNote(i){
-  current=i;
-  const n=notes[i];
-  titleInput.value=n.title;
-  textInput.value=n.text;
-  viewTitle.textContent=n.title;
-  viewText.textContent=n.text;
-  mediaArr=[...n.media];
+  current = i;
+  const n = notes[i];
+  titleInput.value = n.title;
+  textInput.value = n.text;
+  viewTitle.textContent = n.text; // поменяли местами текст и тему
+  viewText.textContent = n.title;
+  mediaArr = [...n.media];
   drawMedia();
   modal.classList.add('active');
 }
 
-document.querySelector('.add-btn').onclick=()=>{
-  current=null;
+document.querySelector('.add-btn').onclick = () => {
+  current = null;
   titleInput.value='';
   textInput.value='';
   viewTitle.textContent='';
@@ -243,80 +253,75 @@ document.querySelector('.add-btn').onclick=()=>{
   modal.classList.add('active');
 };
 
-document.getElementById('close').onclick=()=>modal.classList.remove('active');
+document.getElementById('close').onclick = ()=>modal.classList.remove('active');
 
-document.getElementById('save').onclick=()=>{
-  if(!titleInput.value.trim())return;
-  const note={
-    title:titleInput.value,
-    text:textInput.value,
-    media:mediaArr
+document.getElementById('save').onclick = async ()=>{
+  if(!titleInput.value.trim()) return;
+  const note = {
+    title: titleInput.value,
+    text: textInput.value,
+    media: mediaArr
   };
-  current!==null?notes[current]=note:notes.push(note);
-  localStorage.setItem('notes',JSON.stringify(notes));
+  if(current!==null) notes[current]=note;
+  else notes.push(note);
+
+  localStorage.setItem('notes', JSON.stringify(notes));
   modal.classList.remove('active');
   render();
 };
 
-document.getElementById('delete').onclick=()=>{
-  if(current===null)return;
+document.getElementById('delete').onclick = ()=>{
+  if(current===null) return;
   notes.splice(current,1);
   localStorage.setItem('notes',JSON.stringify(notes));
   modal.classList.remove('active');
   render();
 };
 
-mediaInput.onchange=()=>{
-  [...mediaInput.files].forEach(f=>{
+// Загрузка медиа в Base64
+mediaInput.onchange = async ()=>{
+  const files = [...mediaInput.files];
+  for(const f of files){
+    const base64 = await fileToBase64(f);
     mediaArr.push({
-      type:f.type,
-      url:URL.createObjectURL(f)
+      type: f.type,
+      url: base64
     });
-  });
+  }
   drawMedia();
 };
 
 function drawMedia(){
   mediaList.innerHTML='';
   mediaArr.forEach((m,i)=>{
-    const div=document.createElement('div');
+    const div = document.createElement('div');
     div.className='media-item';
     div.innerHTML=
-      (m.type.startsWith('image')
-      ?`<img src="${m.url}">`
-      :`<video src="${m.url}" controls></video>`)
-      +`<button onclick="removeMedia(${i})">✖</button>`;
+      (m.type.startsWith('image') 
+      ? `<img src="${m.url}">` 
+      : `<video src="${m.url}" controls></video>`)
+      + `<button onclick="removeMedia(${i})">✖</button>`;
     mediaList.appendChild(div);
   });
 }
 
-window.removeMedia=i=>{
+window.removeMedia = i=>{
   mediaArr.splice(i,1);
   drawMedia();
 };
 
-/* SEARCH */
-document.querySelector('.search').oninput=e=>{
-  const q=e.target.value.toLowerCase();
-  [...notesEl.children].forEach((el,i)=>{
-    const n=notes[i];
-    el.style.display=
-      n.title.toLowerCase().includes(q)||
-      n.text.toLowerCase().includes(q)
-      ?'flex':'none';
-  });
-};
+// Поиск
+document.querySelector('.search').oninput = e => render(e.target.value.toLowerCase());
 
-/* SWIPE TO CLOSE */
+// SWIPE TO CLOSE
 let startX=0;
-document.getElementById('card').addEventListener('touchstart',e=>{
-  startX=e.touches[0].clientX;
-});
+document.getElementById('card').addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; });
 document.getElementById('card').addEventListener('touchend',e=>{
   const dx=e.changedTouches[0].clientX-startX;
   if(dx<-80) modal.classList.remove('active');
 });
 
+// Первичная отрисовка заметок
 render();
 </script>
 
