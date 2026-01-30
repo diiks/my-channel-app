@@ -28,7 +28,6 @@ header{
   color:white; 
 }
 
-/* GRID превью */
 main{
   padding:18px;
   display:grid;
@@ -45,23 +44,15 @@ main{
   border-radius:20px;
   padding:14px;
   display:flex;
-  flex-direction:row;
-  align-items:center;
-  justify-content:space-between;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
   font-weight:600;
-  text-align:center;
-  cursor:pointer;
-  gap:10px;
-}
-
-.note .note-text{ flex:1; text-align:left; }
-.note .note-media{ display:flex; flex-direction:column; gap:6px; max-width:60px; }
-
-.note img, .note video{
-  width:100%;
-  border-radius:8px;
+  text-align:left;
   cursor:pointer;
 }
+
+.note h4{ margin-bottom:8px; }
 
 /* ADD */
 .add-btn{
@@ -108,8 +99,8 @@ main{
 
 #closeModal{
   position:absolute;
-  top:12px;
-  right:12px;
+  top:10px;
+  right:10px;
   background:rgba(0,0,0,0.7);
   border:none;
   color:white;
@@ -121,48 +112,42 @@ main{
 }
 
 /* MEDIA */
-.media-list{
+.media-view{
+  width:100%;
+  max-height:300px;
+  background:#1c1c1c;
   display:flex;
-  flex-direction:column;
-  gap:12px;
-  max-height:250px;
-  overflow-y:auto;
-}
-
-.media-list::-webkit-scrollbar{
-  width:6px;
-}
-
-.media-list::-webkit-scrollbar-thumb{
-  background:#666;
-  border-radius:3px;
-}
-
-.media-item{
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  border-radius:16px;
   position:relative;
 }
 
-.media-item img,
-.media-item video{
-  width:100%;
-  border-radius:16px;
+.media-view img, .media-view video{
+  max-width:100%;
+  max-height:100%;
+}
+
+.media-controls{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:10px;
+}
+
+.media-btn{
+  background:#1a1a1a;
+  border:none;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  font-size:20px;
+  color:white;
   cursor:pointer;
 }
 
-.media-item button{
-  position:absolute;
-  top:6px;
-  right:6px;
-  background:rgba(0,0,0,.7);
-  color:white;
-  border:none;
-  border-radius:50%;
-  width:28px;
-  height:28px;
-  font-size:16px;
-}
-
-/* VIEW INPUTS */
+/* INPUTS */
 input,textarea{
   background:#2c2c2c;
   border:none;
@@ -197,14 +182,6 @@ textarea{
 
 .delete{ background:#ff3b3b; }
 
-#addMediaBtn{
-  background:#1a1a1a;
-  border:none;
-  padding:8px 12px;
-  font-size:22px;
-  border-radius:16px;
-  cursor:pointer;
-}
 </style>
 </head>
 <body>
@@ -223,9 +200,16 @@ textarea{
     <button id="closeModal">✖</button>
     <input id="title" placeholder="Тема">
     <textarea id="text" placeholder="Текст заметки"></textarea>
-    <button id="addMediaBtn">📸</button>
+
+    <div class="media-view" id="mediaView">Нет медиа</div>
+    <div class="media-controls">
+      <button class="media-btn" id="prevMedia">◀</button>
+      <button class="media-btn" id="addMediaBtn">📸</button>
+      <button class="media-btn" id="nextMedia">▶</button>
+    </div>
+
     <input type="file" id="media" multiple accept="image/*,video/*" style="display:none;">
-    <div class="media-list" id="mediaList"></div>
+
     <div class="actions">
       <button class="btn delete" id="delete">Удалить</button>
       <button class="btn" id="save">Сохранить</button>
@@ -233,108 +217,90 @@ textarea{
   </div>
 </div>
 
-<!-- Fullscreen media -->
-<div class="fullscreen-overlay" id="fsOverlay">
-  <div id="fsContent"></div>
-</div>
-
 <script>
 let db;
-let currentId = null;
-let mediaArr = [];
+let currentId=null;
+let mediaArr=[];
+let mediaIndex=0;
 
-const notesEl = document.getElementById('notes');
-const modal = document.getElementById('modal');
-const card = document.getElementById('card');
-const titleInput = document.getElementById('title');
-const textInput = document.getElementById('text');
-const mediaInput = document.getElementById('media');
-const mediaList = document.getElementById('mediaList');
-const addMediaBtn = document.getElementById('addMediaBtn');
-const closeModal = document.getElementById('closeModal');
+const notesEl=document.getElementById('notes');
+const modal=document.getElementById('modal');
+const card=document.getElementById('card');
+const titleInput=document.getElementById('title');
+const textInput=document.getElementById('text');
+const mediaInput=document.getElementById('media');
+const mediaView=document.getElementById('mediaView');
 
-const fsOverlay = document.getElementById('fsOverlay');
-const fsContent = document.getElementById('fsContent');
+const addMediaBtn=document.getElementById('addMediaBtn');
+const prevMedia=document.getElementById('prevMedia');
+const nextMedia=document.getElementById('nextMedia');
+const closeModal=document.getElementById('closeModal');
 
 // IndexedDB
-const openDB = () => new Promise(resolve=>{
-  const req = indexedDB.open('DIX_DB',1);
-  req.onupgradeneeded = e=>{
-    db = e.target.result;
+const openDB=()=>new Promise(resolve=>{
+  const req=indexedDB.open('DIX_DB',1);
+  req.onupgradeneeded=e=>{
+    db=e.target.result;
     db.createObjectStore('notes',{ keyPath:'id', autoIncrement:true });
   };
-  req.onsuccess = e=>{ db = e.target.result; resolve(); };
+  req.onsuccess=e=>{ db=e.target.result; resolve(); };
 });
 
-const getAllNotes = () => new Promise(resolve=>{
-  const tx = db.transaction('notes','readonly');
-  const req = tx.objectStore('notes').getAll();
-  req.onsuccess = () => resolve(req.result);
+const getAllNotes=()=>new Promise(resolve=>{
+  const tx=db.transaction('notes','readonly');
+  const req=tx.objectStore('notes').getAll();
+  req.onsuccess=()=>resolve(req.result);
 });
 
-const addNote = note => new Promise(resolve=>{
-  const tx = db.transaction('notes','readwrite');
-  const store = tx.objectStore('notes');
+const addNote=note=>new Promise(resolve=>{
+  const tx=db.transaction('notes','readwrite');
+  const store=tx.objectStore('notes');
   if(currentId==null) store.add(note);
   else store.put({...note,id:currentId});
-  tx.oncomplete = resolve;
+  tx.oncomplete=resolve;
 });
 
-const deleteNote = id => new Promise(resolve=>{
-  const tx = db.transaction('notes','readwrite');
+const deleteNote=id=>new Promise(resolve=>{
+  const tx=db.transaction('notes','readwrite');
   tx.objectStore('notes').delete(id);
-  tx.oncomplete = resolve;
+  tx.oncomplete=resolve;
 });
 
 // Base64
-const fileToBase64 = file => new Promise((res,rej)=>{
-  const reader = new FileReader();
+const fileToBase64=file=>new Promise((res,rej)=>{
+  const reader=new FileReader();
   reader.readAsDataURL(file);
-  reader.onload = ()=>res(reader.result);
-  reader.onerror = e=>rej(e);
+  reader.onload=()=>res(reader.result);
+  reader.onerror=e=>rej(e);
 });
 
 addMediaBtn.onclick=()=>mediaInput.click();
-
 mediaInput.onchange=async()=>{
   const files=[...mediaInput.files];
   for(const f of files){
-    const base64 = await fileToBase64(f);
-    mediaArr.push({ type:f.type, url:base64 });
+    const base64=await fileToBase64(f);
+    mediaArr.push({type:f.type,url:base64});
   }
-  drawMedia();
+  mediaIndex=mediaArr.length-1;
+  showMedia();
 };
 
-function drawMedia(){
-  mediaList.innerHTML='';
-  mediaArr.forEach((m,i)=>{
-    const div=document.createElement('div');
-    div.className='media-item';
-    div.innerHTML=
-      (m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls></video>`)
-      +`<button onclick="removeMedia(${i})">✖</button>`;
-    div.querySelector('img,video')?.addEventListener('click',()=>showFullscreen(m));
-    mediaList.appendChild(div);
-  });
+// Навигация медиа
+prevMedia.onclick=()=>{ if(mediaArr.length>0){ mediaIndex=(mediaIndex-1+mediaArr.length)%mediaArr.length; showMedia(); }};
+nextMedia.onclick=()=>{ if(mediaArr.length>0){ mediaIndex=(mediaIndex+1)%mediaArr.length; showMedia(); }};
+
+function showMedia(){
+  if(mediaArr.length===0){ mediaView.innerHTML='Нет медиа'; return; }
+  const m=mediaArr[mediaIndex];
+  mediaView.innerHTML=m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls autoplay></video>`;
 }
 
-window.removeMedia=i=>{
-  mediaArr.splice(i,1);
-  drawMedia();
-};
-
-function showFullscreen(m){
-  fsContent.innerHTML = m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls autoplay></video>`;
-  fsOverlay.style.display='flex';
-}
-fsOverlay.onclick=()=>fsOverlay.style.display='none';
-
+// Открыть/Закрыть модалку
 document.querySelector('.add-btn').onclick=()=>{
   currentId=null;
-  titleInput.value='';
-  textInput.value='';
-  mediaArr=[];
-  drawMedia();
+  titleInput.value=''; textInput.value='';
+  mediaArr=[]; mediaIndex=0;
+  showMedia();
   modal.classList.add('active');
 };
 
@@ -342,11 +308,7 @@ closeModal.onclick=()=>modal.classList.remove('active');
 
 document.getElementById('save').onclick=async()=>{
   if(!titleInput.value.trim()) return;
-  await addNote({
-    title:titleInput.value,
-    text:textInput.value,
-    media:mediaArr
-  });
+  await addNote({ title:titleInput.value, text:textInput.value, media:mediaArr });
   modal.classList.remove('active');
   render();
 };
@@ -360,16 +322,13 @@ document.getElementById('delete').onclick=async()=>{
 };
 
 async function render(filter=''){
-  const notes = await getAllNotes();
+  const notes=await getAllNotes();
   notesEl.innerHTML='';
   notes.forEach(n=>{
     if(n.title.toLowerCase().includes(filter)||n.text.toLowerCase().includes(filter)){
       const d=document.createElement('div');
       d.className='note';
-      d.innerHTML = `<div class="note-text"><h4>${n.title}</h4></div>` +
-        `<div class="note-media">${n.media.map(m=>{
-          return m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls></video>`;
-        }).join('')}</div>`;
+      d.innerHTML=`<h4>${n.title}</h4>`;
       d.onclick=()=>openNote(n);
       notesEl.appendChild(d);
     }
@@ -381,14 +340,15 @@ function openNote(n){
   titleInput.value=n.title;
   textInput.value=n.text;
   mediaArr=[...n.media];
-  drawMedia();
+  mediaIndex=0;
+  showMedia();
   modal.classList.add('active');
 }
 
 // Поиск
 document.querySelector('.search').oninput=e=>render(e.target.value.toLowerCase());
 
-// Свайп для закрытия
+// Свайп закрытие
 let startX=0;
 card.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; });
 card.addEventListener('touchend',e=>{
@@ -398,5 +358,6 @@ card.addEventListener('touchend',e=>{
 
 openDB().then(render);
 </script>
+
 </body>
 </html>
