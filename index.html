@@ -45,20 +45,21 @@ main{
   border-radius:20px;
   padding:14px;
   display:flex;
-  flex-direction:column;
+  flex-direction:row;
   align-items:center;
-  justify-content:center;
+  justify-content:space-between;
   font-weight:600;
   text-align:center;
   cursor:pointer;
-  gap:6px;
+  gap:10px;
 }
 
-.note h4{ margin-bottom:6px; }
+.note .note-text{ flex:1; text-align:left; }
+.note .note-media{ display:flex; flex-direction:column; gap:6px; max-width:60px; }
+
 .note img, .note video{
   width:100%;
-  border-radius:10px;
-  max-height:120px;
+  border-radius:8px;
   cursor:pointer;
 }
 
@@ -102,21 +103,21 @@ main{
   gap:14px;
   max-height:90vh;
   overflow-y:auto;
+  position:relative;
 }
 
-input,textarea{
-  background:#2c2c2c;
+#closeModal{
+  position:absolute;
+  top:12px;
+  right:12px;
+  background:rgba(0,0,0,0.7);
   border:none;
-  border-radius:16px;
-  padding:12px;
   color:white;
-}
-
-textarea{
-  resize:none;
-  min-height:200px;
-  max-height:400px;
-  overflow-y:auto;
+  font-size:22px;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  cursor:pointer;
 }
 
 /* MEDIA */
@@ -161,10 +162,27 @@ textarea{
   font-size:16px;
 }
 
+/* VIEW INPUTS */
+input,textarea{
+  background:#2c2c2c;
+  border:none;
+  border-radius:16px;
+  padding:12px;
+  color:white;
+}
+
+textarea{
+  resize:none;
+  min-height:200px;
+  max-height:400px;
+  overflow-y:auto;
+}
+
 /* ACTIONS */
 .actions{
   display:flex;
   gap:10px;
+  margin-top:10px;
 }
 
 .btn{
@@ -179,21 +197,13 @@ textarea{
 
 .delete{ background:#ff3b3b; }
 
-/* ПРОСМОТР ФОТО НА ВЕСЬ ЭКРАН */
-.fullscreen-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.95);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:200;
-}
-
-.fullscreen-overlay img,
-.fullscreen-overlay video{
-  max-width:95%;
-  max-height:95%;
+#addMediaBtn{
+  background:#1a1a1a;
+  border:none;
+  padding:8px 12px;
+  font-size:22px;
+  border-radius:16px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -210,12 +220,13 @@ textarea{
 
 <div class="modal" id="modal">
   <div class="card" id="card">
+    <button id="closeModal">✖</button>
     <input id="title" placeholder="Тема">
     <textarea id="text" placeholder="Текст заметки"></textarea>
-    <input type="file" id="media" multiple accept="image/*,video/*">
+    <button id="addMediaBtn">📸</button>
+    <input type="file" id="media" multiple accept="image/*,video/*" style="display:none;">
     <div class="media-list" id="mediaList"></div>
     <div class="actions">
-      <button class="btn" id="close">✖ Закрыть</button>
       <button class="btn delete" id="delete">Удалить</button>
       <button class="btn" id="save">Сохранить</button>
     </div>
@@ -239,6 +250,8 @@ const titleInput = document.getElementById('title');
 const textInput = document.getElementById('text');
 const mediaInput = document.getElementById('media');
 const mediaList = document.getElementById('mediaList');
+const addMediaBtn = document.getElementById('addMediaBtn');
+const closeModal = document.getElementById('closeModal');
 
 const fsOverlay = document.getElementById('fsOverlay');
 const fsContent = document.getElementById('fsContent');
@@ -280,6 +293,8 @@ const fileToBase64 = file => new Promise((res,rej)=>{
   reader.onload = ()=>res(reader.result);
   reader.onerror = e=>rej(e);
 });
+
+addMediaBtn.onclick=()=>mediaInput.click();
 
 mediaInput.onchange=async()=>{
   const files=[...mediaInput.files];
@@ -323,7 +338,7 @@ document.querySelector('.add-btn').onclick=()=>{
   modal.classList.add('active');
 };
 
-document.getElementById('close').onclick=()=>modal.classList.remove('active');
+closeModal.onclick=()=>modal.classList.remove('active');
 
 document.getElementById('save').onclick=async()=>{
   if(!titleInput.value.trim()) return;
@@ -351,9 +366,10 @@ async function render(filter=''){
     if(n.title.toLowerCase().includes(filter)||n.text.toLowerCase().includes(filter)){
       const d=document.createElement('div');
       d.className='note';
-      d.innerHTML = `<h4>${n.title}</h4>` + n.media.map(m=>{
-        return m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls></video>`;
-      }).join('');
+      d.innerHTML = `<div class="note-text"><h4>${n.title}</h4></div>` +
+        `<div class="note-media">${n.media.map(m=>{
+          return m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls></video>`;
+        }).join('')}</div>`;
       d.onclick=()=>openNote(n);
       notesEl.appendChild(d);
     }
