@@ -33,7 +33,6 @@ header{
   color:white;
 }
 
-/* GRID */
 main{
   padding:18px;
   display:grid;
@@ -56,7 +55,6 @@ main{
   cursor:pointer;
 }
 
-/* ADD */
 .add-btn{
   position:fixed;
   bottom:22px;
@@ -70,7 +68,6 @@ main{
   border:none;
 }
 
-/* MODAL */
 .modal{
   position:fixed;
   inset:0;
@@ -108,7 +105,6 @@ textarea{
   min-height:140px;
 }
 
-/* MEDIA */
 .media-list{
   display:flex;
   flex-direction:column;
@@ -138,7 +134,6 @@ textarea{
   font-size:16px;
 }
 
-/* VIEW */
 .view-title{ font-size:14px; opacity:.6; }
 .view-text{
   font-size:22px;
@@ -146,7 +141,6 @@ textarea{
   white-space:pre-wrap;
 }
 
-/* ACTIONS */
 .actions{
   display:flex;
   gap:10px;
@@ -173,7 +167,6 @@ textarea{
 </header>
 
 <main id="notes"></main>
-
 <button class="add-btn">+</button>
 
 <div class="modal" id="modal">
@@ -196,7 +189,8 @@ textarea{
 </div>
 
 <script>
-let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+let db;
+let notes = [];
 let current = null;
 let mediaArr = [];
 
@@ -209,40 +203,65 @@ const mediaList = document.getElementById('mediaList');
 const viewTitle = document.getElementById('viewTitle');
 const viewText = document.getElementById('viewText');
 
-// Конвертация файла в Base64
-const fileToBase64 = (file) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-});
+/* ===== INDEXED DB ===== */
+const request = indexedDB.open('DIX_DB', 1);
 
-function render(filter = ''){
+request.onupgradeneeded = e => {
+  db = e.target.result;
+  db.createObjectStore('notes', { keyPath:'id', autoIncrement:true });
+};
+
+request.onsuccess = e => {
+  db = e.target.result;
+  loadNotes();
+};
+
+function loadNotes(){
+  const tx = db.transaction('notes','readonly');
+  const store = tx.objectStore('notes');
+  store.getAll().onsuccess = e => {
+    notes = e.target.result;
+    render();
+  };
+}
+
+function saveToDB(note){
+  const tx = db.transaction('notes','readwrite');
+  const store = tx.objectStore('notes');
+  current !== null ? store.put(note) : store.add(note);
+  tx.oncomplete = loadNotes;
+}
+
+function deleteFromDB(id){
+  const tx = db.transaction('notes','readwrite');
+  tx.objectStore('notes').delete(id);
+  tx.oncomplete = loadNotes;
+}
+
+/* ===== UI ===== */
+function render(){
   notesEl.innerHTML='';
-  notes.forEach((n,i)=>{
-    if(n.title.toLowerCase().includes(filter) || n.text.toLowerCase().includes(filter)){
-      const d = document.createElement('div');
-      d.className = 'note';
-      d.textContent = n.title;
-      d.onclick = () => openNote(i);
-      notesEl.appendChild(d);
-    }
+  notes.forEach(n=>{
+    const d=document.createElement('div');
+    d.className='note';
+    d.textContent=n.title;
+    d.onclick=()=>openNote(n);
+    notesEl.appendChild(d);
   });
 }
 
-function openNote(i){
-  current = i;
-  const n = notes[i];
+function openNote(n){
+  current = n.id;
   titleInput.value = n.title;
   textInput.value = n.text;
-  viewTitle.textContent = n.text; // поменяли местами текст и тему
-  viewText.textContent = n.title;
+  viewTitle.textContent = n.title;
+  viewText.textContent = n.text;
   mediaArr = [...n.media];
   drawMedia();
   modal.classList.add('active');
 }
 
-document.querySelector('.add-btn').onclick = () => {
+document.querySelector('.add-btn').onclick = ()=>{
   current = null;
   titleInput.value='';
   textInput.value='';
@@ -253,40 +272,28 @@ document.querySelector('.add-btn').onclick = () => {
   modal.classList.add('active');
 };
 
-document.getElementById('close').onclick = ()=>modal.classList.remove('active');
+document.getElementById('close').onclick=()=>modal.classList.remove('active');
 
-document.getElementById('save').onclick = async ()=>{
+document.getElementById('save').onclick=()=>{
   if(!titleInput.value.trim()) return;
   const note = {
+    id: current,
     title: titleInput.value,
     text: textInput.value,
     media: mediaArr
   };
-  if(current!==null) notes[current]=note;
-  else notes.push(note);
-
-  localStorage.setItem('notes', JSON.stringify(notes));
+  saveToDB(note);
   modal.classList.remove('active');
-  render();
 };
 
-document.getElementById('delete').onclick = ()=>{
-  if(current===null) return;
-  notes.splice(current,1);
-  localStorage.setItem('notes',JSON.stringify(notes));
+document.getElementById('delete').onclick=()=>{
+  if(current!==null) deleteFromDB(current);
   modal.classList.remove('active');
-  render();
 };
 
-// Загрузка медиа в Base64
 mediaInput.onchange = async ()=>{
-  const files = [...mediaInput.files];
-  for(const f of files){
-    const base64 = await fileToBase64(f);
-    mediaArr.push({
-      type: f.type,
-      url: base64
-    });
+  for(const f of mediaInput.files){
+    mediaArr.push({ type:f.type, blob:f });
   }
   drawMedia();
 };
@@ -294,35 +301,44 @@ mediaInput.onchange = async ()=>{
 function drawMedia(){
   mediaList.innerHTML='';
   mediaArr.forEach((m,i)=>{
-    const div = document.createElement('div');
+    const url = URL.createObjectURL(m.blob);
+    const div=document.createElement('div');
     div.className='media-item';
-    div.innerHTML=
-      (m.type.startsWith('image') 
-      ? `<img src="${m.url}">` 
-      : `<video src="${m.url}" controls></video>`)
+    div.innerHTML =
+      (m.type.startsWith('image')
+      ? `<img src="${url}">`
+      : `<video src="${url}" controls></video>`)
       + `<button onclick="removeMedia(${i})">✖</button>`;
     mediaList.appendChild(div);
   });
 }
 
-window.removeMedia = i=>{
+window.removeMedia = i =>{
   mediaArr.splice(i,1);
   drawMedia();
 };
 
-// Поиск
-document.querySelector('.search').oninput = e => render(e.target.value.toLowerCase());
+/* SEARCH */
+document.querySelector('.search').oninput = e=>{
+  const q = e.target.value.toLowerCase();
+  [...notesEl.children].forEach((el,i)=>{
+    const n = notes[i];
+    el.style.display =
+      n.title.toLowerCase().includes(q) ||
+      n.text.toLowerCase().includes(q)
+      ? 'flex' : 'none';
+  });
+};
 
-// SWIPE TO CLOSE
+/* SWIPE */
 let startX=0;
-document.getElementById('card').addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; });
-document.getElementById('card').addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-startX;
-  if(dx<-80) modal.classList.remove('active');
+document.getElementById('card').addEventListener('touchstart',e=>{
+  startX=e.touches[0].clientX;
 });
-
-// Первичная отрисовка заметок
-render();
+document.getElementById('card').addEventListener('touchend',e=>{
+  if(e.changedTouches[0].clientX-startX<-80)
+    modal.classList.remove('active');
+});
 </script>
 
 </body>
