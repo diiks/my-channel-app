@@ -1,102 +1,104 @@
-import { openDB, getAllNotes, saveNote, deleteNote } from './db.js';
-import { initMediaViewer } from './media.js';
-
+let notes = [];
 let currentId = null;
-let mediaArr = [];
-let editing = true;
+let media = [];
+let index = 0;
 
 const modal = document.getElementById('modal');
+const card = document.getElementById('card');
 const notesEl = document.getElementById('notes');
-const titleInput = document.getElementById('title');
-const textInput = document.getElementById('text');
-const mediaInput = document.getElementById('media');
-const mediaTrack = document.getElementById('mediaTrack');
+
+const titleEl = document.getElementById('title');
+const textEl = document.getElementById('text');
+const mediaInput = document.getElementById('mediaInput');
+const track = document.getElementById('mediaTrack');
 const indicator = document.getElementById('mediaIndicator');
 
-const viewer = initMediaViewer(mediaTrack, indicator);
-
-/* OPEN */
-document.querySelector('.add-btn').onclick = () => {
-  currentId = null;
-  mediaArr = [];
-  titleInput.value = '';
-  textInput.value = '';
-  viewer.render(mediaArr);
-  modal.classList.add('active');
-};
-
-/* MEDIA */
-document.getElementById('addMedia').onclick = () => mediaInput.click();
-
-mediaInput.onchange = () => {
-  for (const f of mediaInput.files) {
-    mediaArr.push({ type: f.type, blob: f });
-  }
-  viewer.render(mediaArr);
-};
-
-/* SAVE */
-document.getElementById('save').onclick = async () => {
-  if (!titleInput.value.trim()) return;
-
-  await saveNote({
-    id: currentId,
-    title: titleInput.value,
-    text: textInput.value,
-    media: mediaArr
-  });
-
-  modal.classList.remove('active');
-  render();
-};
-
-/* DELETE */
-document.getElementById('delete').onclick = async () => {
-  if (currentId !== null) {
-    await deleteNote(currentId);
-    modal.classList.remove('active');
-    render();
-  }
-};
-
-/* EDIT */
-document.getElementById('edit').onclick = () => {
-  textInput.focus();
-};
-
-/* CLOSE */
-document.getElementById('close').onclick = () =>
-  modal.classList.remove('active');
-
-/* RENDER */
-async function render(filter = '') {
-  const notes = await getAllNotes();
+function renderNotes() {
   notesEl.innerHTML = '';
-
   notes.forEach(n => {
-    if (
-      n.title.toLowerCase().includes(filter) ||
-      n.text.toLowerCase().includes(filter)
-    ) {
-      const d = document.createElement('div');
-      d.className = 'note';
-      d.textContent = n.title;
-      d.onclick = () => openNote(n);
-      notesEl.appendChild(d);
-    }
+    const d = document.createElement('div');
+    d.className = 'note';
+    d.textContent = n.title;
+    d.onclick = () => openNote(n);
+    notesEl.appendChild(d);
   });
 }
 
 function openNote(n) {
   currentId = n.id;
-  titleInput.value = n.title;
-  textInput.value = n.text;
-  mediaArr = n.media || [];
-  viewer.render(mediaArr);
+  titleEl.value = n.title;
+  textEl.value = n.text;
+  media = n.media || [];
+  renderMedia();
   modal.classList.add('active');
 }
 
-document.getElementById('search').oninput = e =>
-  render(e.target.value.toLowerCase());
+function renderMedia() {
+  track.innerHTML = '';
+  index = 0;
 
-openDB().then(render);
+  media.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'media-item';
+    const url = URL.createObjectURL(m);
+    div.innerHTML = `<img src="${url}">`;
+    div.onclick = () => openFullscreen(url);
+    track.appendChild(div);
+  });
+
+  updateIndicator();
+}
+
+function updateIndicator() {
+  indicator.textContent = media.length
+    ? `${index + 1} / ${media.length}`
+    : '';
+}
+
+document.getElementById('addMedia').onclick = () => mediaInput.click();
+
+mediaInput.onchange = () => {
+  for (const f of mediaInput.files) media.push(f);
+  renderMedia();
+};
+
+document.getElementById('save').onclick = () => {
+  if (!titleEl.value) return;
+  if (!currentId) currentId = Date.now();
+
+  const note = {
+    id: currentId,
+    title: titleEl.value,
+    text: textEl.value,
+    media
+  };
+
+  notes = notes.filter(n => n.id !== currentId);
+  notes.push(note);
+
+  localStorage.setItem('notes', JSON.stringify(notes));
+  modal.classList.remove('active');
+  renderNotes();
+};
+
+document.getElementById('delete').onclick = () => {
+  notes = notes.filter(n => n.id !== currentId);
+  localStorage.setItem('notes', JSON.stringify(notes));
+  modal.classList.remove('active');
+  renderNotes();
+};
+
+document.getElementById('close').onclick = () =>
+  modal.classList.remove('active');
+
+document.querySelector('.add-btn').onclick = () => {
+  currentId = null;
+  titleEl.value = '';
+  textEl.value = '';
+  media = [];
+  renderMedia();
+  modal.classList.add('active');
+};
+
+notes = JSON.parse(localStorage.getItem('notes') || '[]');
+renderNotes();
