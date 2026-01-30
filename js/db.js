@@ -1,36 +1,53 @@
 let db;
 
 export const openDB = () =>
-  new Promise(resolve => {
-    const req = indexedDB.open('DIX_DB', 1);
+  new Promise((resolve, reject) => {
+    const req = indexedDB.open('DIX_DB', 2);
 
     req.onupgradeneeded = e => {
       db = e.target.result;
-      db.createObjectStore('notes', {
-        keyPath: 'id',
-        autoIncrement: true
-      });
+      if (!db.objectStoreNames.contains('notes')) {
+        db.createObjectStore('notes', {
+          keyPath: 'id',
+          autoIncrement: true
+        });
+      }
     };
 
     req.onsuccess = e => {
       db = e.target.result;
       resolve();
     };
+
+    req.onerror = () => reject(req.error);
   });
 
 export const getAllNotes = () =>
   new Promise(resolve => {
     const tx = db.transaction('notes', 'readonly');
-    const req = tx.objectStore('notes').getAll();
-    req.onsuccess = () => resolve(req.result);
+    const store = tx.objectStore('notes');
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
   });
 
 export const saveNote = note =>
-  new Promise(resolve => {
+  new Promise((resolve, reject) => {
+    const cleanNote = {
+      id: note.id ?? undefined,
+      title: note.title,
+      text: note.text,
+      media: note.media || []
+    };
+
     const tx = db.transaction('notes', 'readwrite');
     const store = tx.objectStore('notes');
-    note.id ? store.put(note) : store.add(note);
+
+    cleanNote.id
+      ? store.put(cleanNote)
+      : store.add(cleanNote);
+
     tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
   });
 
 export const deleteNote = id =>
