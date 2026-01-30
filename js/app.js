@@ -1,5 +1,5 @@
 import { openDB, saveNote, deleteNote } from './db.js';
-import { fileToBase64, renderMedia } from './media.js';
+import { renderMedia } from './media.js';
 import { renderNotes, enableSwipeClose } from './ui.js';
 
 let currentId = null;
@@ -13,7 +13,7 @@ const textInput = document.getElementById('text');
 const mediaInput = document.getElementById('media');
 const mediaList = document.getElementById('mediaList');
 
-/* Открыть создание */
+/* Новая заметка */
 document.querySelector('.add-btn').onclick = () => {
   currentId = null;
   titleInput.value = '';
@@ -23,12 +23,12 @@ document.querySelector('.add-btn').onclick = () => {
   modal.classList.add('active');
 };
 
-/* Медиа */
-mediaInput.onchange = async () => {
+/* Медиа → Blob */
+mediaInput.onchange = () => {
   for (const file of mediaInput.files) {
     mediaArr.push({
       type: file.type,
-      url: await fileToBase64(file)
+      blob: file
     });
   }
   renderMedia(mediaList, mediaArr, removeMedia);
@@ -39,15 +39,17 @@ const removeMedia = i => {
   renderMedia(mediaList, mediaArr, removeMedia);
 };
 
-/* Сохранение */
+/* Сохранение (ПОЧИНЕНО) */
 document.getElementById('save').onclick = async () => {
   if (!titleInput.value.trim()) return;
+
   await saveNote({
     id: currentId,
     title: titleInput.value,
     text: textInput.value,
     media: mediaArr
   });
+
   modal.classList.remove('active');
   renderNotes(notesEl, '', openNote);
 };
@@ -64,12 +66,12 @@ document.getElementById('delete').onclick = async () => {
 document.getElementById('close').onclick =
   () => modal.classList.remove('active');
 
-/* Открытие заметки */
+/* Открытие */
 const openNote = n => {
   currentId = n.id;
   titleInput.value = n.title;
   textInput.value = n.text;
-  mediaArr = [...n.media];
+  mediaArr = n.media || [];
   renderMedia(mediaList, mediaArr, removeMedia);
   modal.classList.add('active');
 };
@@ -78,10 +80,8 @@ const openNote = n => {
 document.getElementById('search').oninput = e =>
   renderNotes(notesEl, e.target.value.toLowerCase(), openNote);
 
-/* Свайп */
 enableSwipeClose(card, modal);
 
-/* Старт */
 openDB().then(() =>
   renderNotes(notesEl, '', openNote)
 );
