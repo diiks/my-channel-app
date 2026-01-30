@@ -4,66 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DIX</title>
-
-  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <header class="top-bar">
   <div class="logo">DIX</div>
-  <input id="search" placeholder="Поиск">
 </header>
 
 <main class="main">
-  <div id="notes" class="notes-grid"></div>
+  <div id="notes"></div>
 </main>
 
 <button class="add-btn">+</button>
 
-<!-- МОДАЛКА -->
 <div class="modal" id="modal">
   <div class="card" id="card">
-
-    <!-- крестик -->
     <button class="close-x" id="close">✖</button>
 
     <input id="title" placeholder="Тема">
-
-    <!-- МЕДИА -->
-    <div class="media-viewer">
-      <div class="media-track" id="mediaTrack"></div>
-      <div class="media-indicator" id="mediaIndicator"></div>
-    </div>
 
     <!-- ТЕКСТ -->
     <div class="text-wrapper">
       <textarea id="text" placeholder="Текст заметки"></textarea>
     </div>
 
-    <!-- скрытый input -->
-    <input type="file" id="media" multiple accept="image/*,video/*" hidden>
+    <!-- МЕДИА -->
+    <div class="media-viewer" id="mediaViewer">
+      <div class="media-track" id="mediaTrack"></div>
+      <div class="media-indicator" id="mediaIndicator"></div>
+    </div>
 
-    <!-- КНОПКИ -->
+    <input type="file" id="mediaInput" multiple accept="image/*,video/*" hidden>
+
     <div class="actions">
       <button class="circle danger" id="delete">🗑️</button>
       <button class="circle" id="edit">✏️</button>
       <button class="circle" id="addMedia">
-        <img src="assets/add-media.png" alt="add">
+        <img src="assets/add-media.png">
       </button>
       <button class="circle success" id="save">✅</button>
     </div>
-
   </div>
 </div>
 
 <script type="module" src="js/app.js"></script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
-}
-</script>
-
 </body>
 </html>
