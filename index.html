@@ -1,186 +1,23 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DIX</title>
-<style>
-* { box-sizing:border-box; margin:0; padding:0; font-family:system-ui; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIX</title>
 
-body { background:#004d33; color:white; min-height:100vh; }
-
-header{
-  background:#000;
-  padding:18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.logo{ font-size:30px; font-weight:800; color:#39ff14; }
-
-.search{ 
-  width:calc(50% - 20px); 
-  padding:10px 14px; 
-  border-radius:16px; 
-  border:none; 
-  background:#1a1a1a; 
-  color:white; 
-}
-
-/* GRID превью */
-main{
-  padding:18px;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:16px;
-  justify-items:center;
-  overflow-y:auto;
-  max-height:calc(100vh - 100px);
-}
-
-.note{
-  background:#000;
-  width:100%;
-  min-height:90px;
-  border-radius:20px;
-  padding:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:600;
-  text-align:center;
-  cursor:pointer;
-}
-
-/* ADD */
-.add-btn{
-  position:fixed;
-  bottom:22px;
-  right:22px;
-  width:64px;
-  height:64px;
-  border-radius:50%;
-  background:#000;
-  color:#004d33;
-  font-size:36px;
-  border:none;
-}
-
-/* MODAL */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.85);
-  display:none;
-  justify-content:center;
-  align-items:flex-start;
-  overflow-y:auto;
-  padding:30px 0;
-}
-
-.modal.active{ display:flex; }
-
-.card{
-  background:#0f0f0f;
-  width:90%;
-  max-width:420px;
-  border-radius:26px;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  max-height:90vh;
-  overflow-y:auto;
-}
-
-input,textarea{
-  background:#2c2c2c;
-  border:none;
-  border-radius:16px;
-  padding:12px;
-  color:white;
-}
-
-textarea{
-  resize:none;
-  min-height:140px;
-}
-
-/* MEDIA */
-.media-list{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  max-height:250px;
-  overflow-y:auto;
-  scrollbar-width: thin;
-  scrollbar-color: #666 #222;
-}
-
-.media-list::-webkit-scrollbar{
-  width:6px;
-}
-
-.media-list::-webkit-scrollbar-thumb{
-  background:#666;
-  border-radius:3px;
-}
-
-.media-item{
-  position:relative;
-}
-
-.media-item img,
-.media-item video{
-  width:100%;
-  border-radius:16px;
-}
-
-.media-item button{
-  position:absolute;
-  top:6px;
-  right:6px;
-  background:rgba(0,0,0,.7);
-  color:white;
-  border:none;
-  border-radius:50%;
-  width:28px;
-  height:28px;
-  font-size:16px;
-}
-
-/* ACTIONS */
-.actions{
-  display:flex;
-  gap:10px;
-}
-
-.btn{
-  flex:1;
-  padding:12px;
-  border-radius:18px;
-  border:none;
-  background:#222;
-  color:white;
-  font-weight:600;
-}
-
-.delete{ background:#ff3b3b; }
-
-/* ПРОКРУТКА */
-.view-title{ font-size:18px; font-weight:700; }
-.view-text{ font-size:16px; line-height:1.5; white-space:pre-wrap; max-height:400px; overflow-y:auto; }
-</style>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<header>
+<header class="top-bar">
   <div class="logo">DIX</div>
-  <input class="search" placeholder="Поиск">
+  <input id="search" placeholder="Поиск">
 </header>
 
-<main id="notes"></main>
+<main class="main">
+  <div id="notes" class="notes-grid"></div>
+</main>
 
 <button class="add-btn">+</button>
 
@@ -188,158 +25,18 @@ textarea{
   <div class="card" id="card">
     <input id="title" placeholder="Тема">
     <textarea id="text" placeholder="Текст заметки"></textarea>
+
     <input type="file" id="media" multiple accept="image/*,video/*">
     <div class="media-list" id="mediaList"></div>
+
     <div class="actions">
       <button class="btn" id="close">✖ Закрыть</button>
-      <button class="btn delete" id="delete">Удалить</button>
+      <button class="btn delete-btn" id="delete">Удалить</button>
       <button class="btn" id="save">Сохранить</button>
     </div>
   </div>
 </div>
 
-<script>
-let db;
-let currentId = null;
-let mediaArr = [];
-
-const notesEl = document.getElementById('notes');
-const modal = document.getElementById('modal');
-const card = document.getElementById('card');
-const titleInput = document.getElementById('title');
-const textInput = document.getElementById('text');
-const mediaInput = document.getElementById('media');
-const mediaList = document.getElementById('mediaList');
-
-// IndexedDB
-const openDB = () => new Promise(resolve=>{
-  const req = indexedDB.open('DIX_DB',1);
-  req.onupgradeneeded = e=>{
-    db = e.target.result;
-    db.createObjectStore('notes',{ keyPath:'id', autoIncrement:true });
-  };
-  req.onsuccess = e=>{ db = e.target.result; resolve(); };
-});
-
-const getAllNotes = () => new Promise(resolve=>{
-  const tx = db.transaction('notes','readonly');
-  const req = tx.objectStore('notes').getAll();
-  req.onsuccess = () => resolve(req.result);
-});
-
-const addNote = note => new Promise(resolve=>{
-  const tx = db.transaction('notes','readwrite');
-  const store = tx.objectStore('notes');
-  if(currentId==null) store.add(note);
-  else store.put({...note,id:currentId});
-  tx.oncomplete = resolve;
-});
-
-const deleteNote = id => new Promise(resolve=>{
-  const tx = db.transaction('notes','readwrite');
-  tx.objectStore('notes').delete(id);
-  tx.oncomplete = resolve;
-});
-
-// Base64
-const fileToBase64 = file => new Promise((res,rej)=>{
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = ()=>res(reader.result);
-  reader.onerror = e=>rej(e);
-});
-
-mediaInput.onchange=async()=>{
-  const files=[...mediaInput.files];
-  for(const f of files){
-    const base64 = await fileToBase64(f);
-    mediaArr.push({ type:f.type, url:base64 });
-  }
-  drawMedia();
-};
-
-function drawMedia(){
-  mediaList.innerHTML='';
-  mediaArr.forEach((m,i)=>{
-    const div=document.createElement('div');
-    div.className='media-item';
-    div.innerHTML=
-      (m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls></video>`)
-      +`<button onclick="removeMedia(${i})">✖</button>`;
-    mediaList.appendChild(div);
-  });
-}
-
-window.removeMedia=i=>{
-  mediaArr.splice(i,1);
-  drawMedia();
-};
-
-document.querySelector('.add-btn').onclick=()=>{
-  currentId=null;
-  titleInput.value='';
-  textInput.value='';
-  mediaArr=[];
-  drawMedia();
-  modal.classList.add('active');
-};
-
-document.getElementById('close').onclick=()=>modal.classList.remove('active');
-
-document.getElementById('save').onclick=async()=>{
-  if(!titleInput.value.trim()) return;
-  await addNote({
-    title:titleInput.value,
-    text:textInput.value,
-    media:mediaArr
-  });
-  modal.classList.remove('active');
-  render();
-};
-
-document.getElementById('delete').onclick=async()=>{
-  if(currentId!==null){
-    await deleteNote(currentId);
-    modal.classList.remove('active');
-    render();
-  }
-};
-
-async function render(filter=''){
-  const notes = await getAllNotes();
-  notesEl.innerHTML='';
-  notes.forEach(n=>{
-    if(n.title.toLowerCase().includes(filter)||n.text.toLowerCase().includes(filter)){
-      const d=document.createElement('div');
-      d.className='note';
-      d.textContent=n.title;
-      d.onclick=()=>openNote(n);
-      notesEl.appendChild(d);
-    }
-  });
-}
-
-function openNote(n){
-  currentId=n.id;
-  titleInput.value=n.title;
-  textInput.value=n.text;
-  mediaArr=[...n.media];
-  drawMedia();
-  modal.classList.add('active');
-}
-
-// Поиск
-document.querySelector('.search').oninput=e=>render(e.target.value.toLowerCase());
-
-// Свайп для закрытия
-let startX=0;
-card.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; });
-card.addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-startX;
-  if(dx<-80) modal.classList.remove('active');
-});
-
-openDB().then(render);
-</script>
+<script type="module" src="js/app.js"></script>
 </body>
 </html>
