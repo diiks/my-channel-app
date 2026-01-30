@@ -5,28 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DIX</title>
 
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
+
+  <!-- Стили -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+<!-- ШАПКА -->
 <header class="top-bar">
   <div class="logo">DIX</div>
   <input id="search" placeholder="Поиск">
 </header>
 
+<!-- СПИСОК ЗАМЕТОК -->
 <main class="main">
   <div id="notes" class="notes-grid"></div>
 </main>
 
+<!-- КНОПКА ДОБАВЛЕНИЯ -->
 <button class="add-btn">+</button>
 
+<!-- МОДАЛКА -->
 <div class="modal" id="modal">
   <div class="card" id="card">
-    <input id="title" placeholder="Тема">
-    <textarea id="text" placeholder="Текст заметки"></textarea>
 
-    <input type="file" id="media" multiple accept="image/*,video/*">
+    <input id="title" placeholder="Тема">
+
+    <textarea
+      id="text"
+      placeholder="Текст заметки"
+    ></textarea>
+
+    <input
+      type="file"
+      id="media"
+      multiple
+      accept="image/*,video/*"
+    >
+
     <div class="media-list" id="mediaList"></div>
 
     <div class="actions">
@@ -34,9 +52,23 @@
       <button class="btn delete-btn" id="delete">Удалить</button>
       <button class="btn" id="save">Сохранить</button>
     </div>
+
   </div>
 </div>
 
+<!-- ОСНОВНОЙ JS -->
 <script type="module" src="js/app.js"></script>
+
+<!-- SERVICE WORKER -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('./sw.js')
+      .catch(err => console.error('SW error', err));
+  });
+}
+</script>
+
 </body>
 </html>
