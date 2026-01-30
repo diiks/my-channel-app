@@ -1,24 +1,43 @@
-export const renderMedia = (container, media, removeFn) => {
-  container.innerHTML = '';
+export const initMediaViewer = (track, indicator) => {
+  let index = 0;
+  let media = [];
 
-  media.forEach((m, i) => {
-    const div = document.createElement('div');
-    div.className = 'media-item';
+  const update = () => {
+    track.style.transform = `translateX(-${index * 100}%)`;
+    indicator.textContent = media.length
+      ? `${index + 1} / ${media.length}`
+      : '';
+  };
 
-    const url = URL.createObjectURL(m.blob);
+  const render = arr => {
+    media = arr;
+    index = 0;
+    track.innerHTML = '';
 
-    div.innerHTML = `
-      ${m.type.startsWith('image')
+    media.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'media-item';
+      const url = URL.createObjectURL(m.blob);
+      div.innerHTML = m.type.startsWith('image')
         ? `<img src="${url}">`
-        : `<video src="${url}" controls></video>`}
-      <button>✖</button>
-    `;
+        : `<video src="${url}" controls></video>`;
+      track.appendChild(div);
+    });
 
-    div.querySelector('button').onclick = () => {
-      URL.revokeObjectURL(url);
-      removeFn(i);
-    };
+    update();
+  };
 
-    container.appendChild(div);
+  let startX = 0;
+  track.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
   });
+
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (dx < -50 && index < media.length - 1) index++;
+    if (dx > 50 && index > 0) index--;
+    update();
+  });
+
+  return { render };
 };
