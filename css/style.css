@@ -7,152 +7,175 @@ body {
   color: white;
 }
 
-/* ШАПКА */
+/* HEADER */
 .top-bar {
   background: black;
   padding: 18px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .logo {
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 800;
   color: #39ff14;
 }
 
 #search {
   background: #222;
-  color: white;
-  border: 1px solid #555;
   border-radius: 20px;
+  border: none;
   padding: 10px 16px;
-  font-size: 16px;
+  color: white;
 }
 
-/* ОСНОВА */
+/* MAIN */
 .main {
   max-width: 520px;
   margin: auto;
   padding: 20px;
 }
 
-.notes-grid {
-  display: grid;
-  gap: 16px;
-}
-
-/* ПРЕВЬЮ */
 .note {
   background: #000;
   border-radius: 20px;
   padding: 22px;
-  font-size: 20px;
+  font-size: 18px;
   text-align: center;
   cursor: pointer;
 }
 
-/* ПЛЮС */
+/* ADD */
 .add-btn {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 70px;
-  height: 70px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: black;
   color: #004d33;
-  font-size: 40px;
+  font-size: 36px;
   border: none;
 }
 
-/* МОДАЛКА */
+/* MODAL */
 .modal {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.85);
   display: none;
   justify-content: center;
-  align-items: flex-start;
-  padding: 20px 0;
-  overflow-y: auto;
+  align-items: center;
 }
 
-.modal.active { display: flex; }
+.modal.active {
+  display: flex;
+}
 
 .card {
+  position: relative;
   background: #0d0d0d;
-  border-radius: 26px;
-  padding: 20px;
   width: 90%;
   max-width: 420px;
+  max-height: 90vh;
+  border-radius: 24px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.card input,
-.card textarea {
-  background: #222;
-  border: 1px solid #555;
-  border-radius: 18px;
-  padding: 14px;
+/* CLOSE */
+.close-x {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
   color: white;
-  font-size: 16px;
+  font-size: 20px;
 }
 
-.card textarea {
-  min-height: 30vh;
-  resize: none;
+/* INPUTS */
+input, textarea {
+  background: #222;
+  border-radius: 16px;
+  border: none;
+  padding: 12px;
+  color: white;
 }
 
-/* МЕДИА */
-.media-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 250px;
+.text-wrapper {
+  flex: 1;
   overflow-y: auto;
 }
 
-.media-item {
+textarea {
+  min-height: 200px;
+  resize: none;
+}
+
+/* MEDIA */
+.media-viewer {
   position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.media-track {
+  display: flex;
+  transition: transform .35s ease;
+}
+
+.media-item {
+  min-width: 100%;
 }
 
 .media-item img,
 .media-item video {
   width: 100%;
-  border-radius: 18px;
+  border-radius: 16px;
 }
 
-.media-item button {
+.media-indicator {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  background: rgba(0,0,0,.7);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  bottom: 8px;
+  right: 12px;
+  background: rgba(0,0,0,.6);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 14px;
 }
 
-/* КНОПКИ */
+/* ACTIONS */
 .actions {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.btn {
-  flex: 1;
-  background: #333;
-  color: white;
-  border-radius: 14px;
-  padding: 10px;
+.circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #222;
   border: none;
+  color: white;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.delete-btn {
-  color: #ff4d4d;
+.circle img {
+  width: 24px;
+}
+
+.circle.danger {
+  background: #ff3b3b;
+}
+
+.circle.success {
+  background: #2ecc71;
 }
