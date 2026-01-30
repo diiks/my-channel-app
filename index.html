@@ -7,7 +7,6 @@
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
-
 body{background:#004d33;color:white;min-height:100vh}
 
 header{
@@ -64,7 +63,7 @@ main{
   background:rgba(0,0,0,.85);
   display:none;
   justify-content:center;
-  align-items:center; /* по центру */
+  align-items:center;
   overflow-y:auto;
   padding:30px 0;
 }
@@ -81,7 +80,7 @@ main{
   flex-direction:column;
   gap:14px;
   position:relative;
-  max-height:90vh; /* чтобы скроллилось, если длинное */
+  max-height:90vh;
   overflow-y:auto;
 }
 
@@ -111,11 +110,22 @@ textarea{
   overflow:hidden;
   border-radius:18px;
   margin-top:10px;
+  width:100%;
+  height:240px;
 }
 
-.media-view img,
-.media-view video{
+.media-track{
+  display:flex;
+  transition:transform 0.3s ease;
+  height:100%;
+}
+
+.media-track img,
+.media-track video{
+  flex-shrink:0;
   width:100%;
+  height:100%;
+  object-fit:contain; /* фото отображаются полностью */
   border-radius:18px;
 }
 
@@ -148,8 +158,8 @@ textarea{
 .camera{
   width:56px;
   height:56px;
-  border-radius:12px; /* квадрат с закруглением */
-  background:#222; /* такой же цвет как кнопка сохранить */
+  border-radius:12px;
+  background:#222;
   color:white;
   font-size:26px;
   border:none;
@@ -169,6 +179,8 @@ textarea{
 .fullscreen video{
   max-width:100%;
   max-height:100%;
+  object-fit:contain;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -190,7 +202,9 @@ textarea{
     <input id="title" placeholder="Тема">
     <textarea id="text" placeholder="Текст заметки"></textarea>
 
-    <div class="media-view" id="mediaView"></div>
+    <div class="media-view" id="mediaView">
+      <div class="media-track" id="mediaTrack"></div>
+    </div>
     <div class="media-counter" id="mediaCounter"></div>
 
     <input type="file" id="media" accept="image/*,video/*" multiple hidden>
@@ -210,13 +224,16 @@ let notes = JSON.parse(localStorage.getItem('notes')||'[]');
 let current = null;
 let mediaArr = [];
 let mediaIndex = 0;
+let startX=0;
 
 const notesEl = document.getElementById('notes');
 const modal = document.getElementById('modal');
+const card = document.getElementById('card');
 const titleInput = document.getElementById('title');
 const textInput = document.getElementById('text');
 const mediaInput = document.getElementById('media');
 const mediaView = document.getElementById('mediaView');
+const mediaTrack = document.getElementById('mediaTrack');
 const mediaCounter = document.getElementById('mediaCounter');
 const fullscreen = document.getElementById('fullscreen');
 
@@ -285,34 +302,48 @@ mediaInput.onchange = ()=>{
 };
 
 function drawMedia(){
-  mediaView.innerHTML='';
+  mediaTrack.innerHTML='';
   if(!mediaArr.length){ mediaCounter.textContent=''; return; }
-  const m = mediaArr[mediaIndex];
-  mediaView.innerHTML = m.type.startsWith('image')
-    ? `<img src="${m.data}">`
-    : `<video src="${m.data}" controls></video>`;
-  mediaCounter.textContent = `${mediaIndex+1}/${mediaArr.length}`;
 
-  mediaView.onclick = ()=>{
-    fullscreen.innerHTML = mediaView.innerHTML;
-    fullscreen.style.display='flex';
-  };
+  mediaArr.forEach(m=>{
+    const el = document.createElement(m.type.startsWith('image')?'img':'video');
+    el.src = m.data;
+    el.controls = m.type.startsWith('video');
+    mediaTrack.appendChild(el);
+  });
+
+  updateMediaView();
 }
 
-/* fullscreen закрытие */
-fullscreen.onclick = ()=> fullscreen.style.display='none';
+function updateMediaView(){
+  const offset = -mediaIndex * mediaView.offsetWidth;
+  mediaTrack.style.transform = `translateX(${offset}px)`;
+  mediaCounter.textContent = mediaArr.length?`${mediaIndex+1}/${mediaArr.length}`:'';
+}
 
-/* свайп для фото */
-let startX=0;
-mediaView.addEventListener('touchstart', e => startX=e.touches[0].clientX);
+mediaView.addEventListener('touchstart', e=>{startX=e.touches[0].clientX;});
 mediaView.addEventListener('touchend', e=>{
-  const dx=e.changedTouches[0].clientX - startX;
+  const dx = e.changedTouches[0].clientX - startX;
   if(dx>50 && mediaIndex>0) mediaIndex--;
   if(dx<-50 && mediaIndex<mediaArr.length-1) mediaIndex++;
-  drawMedia();
+  updateMediaView();
 });
 
-/* поиск */
+/* SWIPE LEFT TO CLOSE MODAL */
+card.addEventListener('touchstart', e=>{startX=e.touches[0].clientX;});
+card.addEventListener('touchend', e=>{
+  const dx = e.changedTouches[0].clientX - startX;
+  if(dx<-80) modal.classList.remove('active');
+});
+
+/* FULLSCREEN PHOTO/VIDEO */
+mediaTrack.addEventListener('click', ()=>{
+  fullscreen.innerHTML = mediaTrack.innerHTML;
+  fullscreen.style.display='flex';
+});
+fullscreen.onclick = ()=>fullscreen.style.display='none';
+
+/* SEARCH */
 document.querySelector('.search').oninput=e=>{
   const q=e.target.value.toLowerCase();
   [...notesEl.children].forEach((el,i)=>{
@@ -323,6 +354,5 @@ document.querySelector('.search').oninput=e=>{
 
 render();
 </script>
-
 </body>
 </html>
