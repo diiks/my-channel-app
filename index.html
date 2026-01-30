@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DIX</title>
-
 <style>
 * { box-sizing:border-box; margin:0; padding:0; font-family:system-ui; }
 
@@ -18,37 +17,43 @@ header{
   align-items:center;
 }
 
-.logo{
-  font-size:30px;
-  font-weight:800;
-  color:#39ff14;
+.logo{ font-size:30px; font-weight:800; color:#39ff14; }
+
+.search{ 
+  width:calc(50% - 20px); 
+  padding:10px 14px; 
+  border-radius:16px; 
+  border:none; 
+  background:#1a1a1a; 
+  color:white; 
 }
 
-.search{
-  width:170px;
-  padding:10px 14px;
-  border-radius:16px;
-  border:none;
-  background:#1a1a1a;
-  color:white;
-}
-
+/* GRID превью */
 main{
   padding:18px;
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
   gap:16px;
+  justify-items:center;
+  overflow-y:auto;
+  max-height:calc(100vh - 100px);
 }
 
 .note{
   background:#000;
+  width:100%;
+  min-height:90px;
   border-radius:20px;
-  padding:16px;
-  text-align:center;
+  padding:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-weight:600;
+  text-align:center;
   cursor:pointer;
 }
 
+/* ADD */
 .add-btn{
   position:fixed;
   bottom:22px;
@@ -62,6 +67,7 @@ main{
   border:none;
 }
 
+/* MODAL */
 .modal{
   position:fixed;
   inset:0;
@@ -72,6 +78,7 @@ main{
   overflow-y:auto;
   padding:30px 0;
 }
+
 .modal.active{ display:flex; }
 
 .card{
@@ -83,6 +90,8 @@ main{
   display:flex;
   flex-direction:column;
   gap:14px;
+  max-height:90vh;
+  overflow-y:auto;
 }
 
 input,textarea{
@@ -98,6 +107,7 @@ textarea{
   min-height:140px;
 }
 
+/* MEDIA */
 .media-list{
   display:flex;
   flex-direction:column;
@@ -124,8 +134,10 @@ textarea{
   border-radius:50%;
   width:28px;
   height:28px;
+  font-size:16px;
 }
 
+/* ACTIONS */
 .actions{
   display:flex;
   gap:10px;
@@ -141,9 +153,12 @@ textarea{
 }
 
 .delete{ background:#ff3b3b; }
+
+/* ПРОКРУТКА */
+.view-title{ font-size:18px; font-weight:700; }
+.view-text{ font-size:16px; line-height:1.5; white-space:pre-wrap; max-height:400px; overflow-y:auto; }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -159,10 +174,8 @@ textarea{
   <div class="card">
     <input id="title" placeholder="Тема">
     <textarea id="text" placeholder="Текст заметки"></textarea>
-
     <input type="file" id="media" multiple accept="image/*,video/*">
     <div class="media-list" id="mediaList"></div>
-
     <div class="actions">
       <button class="btn" id="close">✖</button>
       <button class="btn delete" id="delete">Удалить</button>
@@ -217,7 +230,7 @@ async function render(filter=''){
     if(n.title.toLowerCase().includes(filter) || n.text.toLowerCase().includes(filter)){
       const d=document.createElement('div');
       d.className='note';
-      d.textContent=n.title;
+      d.textContent=n.title; // Превью — только тема
       d.onclick=()=>openNote(n);
       notesEl.appendChild(d);
     }
@@ -225,10 +238,10 @@ async function render(filter=''){
 }
 
 function openNote(n){
-  currentId=n.id;
-  titleInput.value=n.title;
-  textInput.value=n.text;
-  mediaArr=[...n.media];
+  currentId = n.id;
+  titleInput.value = n.title;
+  textInput.value = n.text;
+  mediaArr = [...n.media];
   drawMedia();
   modal.classList.add('active');
 }
@@ -246,12 +259,13 @@ document.getElementById('close').onclick=()=>modal.classList.remove('active');
 
 document.getElementById('save').onclick=async()=>{
   if(!titleInput.value.trim()) return;
-  await saveNote({
+  const note = {
     id: currentId,
     title: titleInput.value,
     text: textInput.value,
     media: mediaArr
-  });
+  };
+  await saveNote(note);
   modal.classList.remove('active');
   render();
 };
@@ -264,10 +278,20 @@ document.getElementById('delete').onclick=async()=>{
   }
 };
 
-mediaInput.onchange=()=>{
-  [...mediaInput.files].forEach(f=>{
-    mediaArr.push({ type:f.type, blob:f });
-  });
+// 🔹 Конвертация файлов в Base64
+const fileToBase64 = (file) => new Promise((resolve,reject)=>{
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = ()=>resolve(reader.result);
+  reader.onerror = e=>reject(e);
+});
+
+mediaInput.onchange=async()=>{
+  const files=[...mediaInput.files];
+  for(const f of files){
+    const base64=await fileToBase64(f);
+    mediaArr.push({ type:f.type, url:base64 });
+  }
   drawMedia();
 };
 
@@ -276,11 +300,10 @@ function drawMedia(){
   mediaArr.forEach((m,i)=>{
     const div=document.createElement('div');
     div.className='media-item';
-    const url=URL.createObjectURL(m.blob);
     div.innerHTML=
       (m.type.startsWith('image')
-      ?`<img src="${url}">`
-      :`<video src="${url}" controls></video>`)
+      ?`<img src="${m.url}">`
+      :`<video src="${m.url}" controls></video>`)
       +`<button onclick="removeMedia(${i})">✖</button>`;
     mediaList.appendChild(div);
   });
