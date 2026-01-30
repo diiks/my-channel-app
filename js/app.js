@@ -1,45 +1,41 @@
-import { openDB, saveNote, deleteNote } from './db.js';
-import { renderMedia } from './media.js';
-import { renderNotes, enableSwipeClose } from './ui.js';
+import { openDB, getAllNotes, saveNote, deleteNote } from './db.js';
+import { initMediaViewer } from './media.js';
 
 let currentId = null;
 let mediaArr = [];
+let editing = true;
 
 const modal = document.getElementById('modal');
-const card = document.getElementById('card');
 const notesEl = document.getElementById('notes');
 const titleInput = document.getElementById('title');
 const textInput = document.getElementById('text');
 const mediaInput = document.getElementById('media');
-const mediaList = document.getElementById('mediaList');
+const mediaTrack = document.getElementById('mediaTrack');
+const indicator = document.getElementById('mediaIndicator');
 
-/* Новая заметка */
+const viewer = initMediaViewer(mediaTrack, indicator);
+
+/* OPEN */
 document.querySelector('.add-btn').onclick = () => {
   currentId = null;
+  mediaArr = [];
   titleInput.value = '';
   textInput.value = '';
-  mediaArr = [];
-  renderMedia(mediaList, mediaArr, removeMedia);
+  viewer.render(mediaArr);
   modal.classList.add('active');
 };
 
-/* Медиа → Blob */
+/* MEDIA */
+document.getElementById('addMedia').onclick = () => mediaInput.click();
+
 mediaInput.onchange = () => {
-  for (const file of mediaInput.files) {
-    mediaArr.push({
-      type: file.type,
-      blob: file
-    });
+  for (const f of mediaInput.files) {
+    mediaArr.push({ type: f.type, blob: f });
   }
-  renderMedia(mediaList, mediaArr, removeMedia);
+  viewer.render(mediaArr);
 };
 
-const removeMedia = i => {
-  mediaArr.splice(i, 1);
-  renderMedia(mediaList, mediaArr, removeMedia);
-};
-
-/* Сохранение (ПОЧИНЕНО) */
+/* SAVE */
 document.getElementById('save').onclick = async () => {
   if (!titleInput.value.trim()) return;
 
@@ -51,37 +47,56 @@ document.getElementById('save').onclick = async () => {
   });
 
   modal.classList.remove('active');
-  renderNotes(notesEl, '', openNote);
+  render();
 };
 
-/* Удаление */
+/* DELETE */
 document.getElementById('delete').onclick = async () => {
   if (currentId !== null) {
     await deleteNote(currentId);
     modal.classList.remove('active');
-    renderNotes(notesEl, '', openNote);
+    render();
   }
 };
 
-document.getElementById('close').onclick =
-  () => modal.classList.remove('active');
+/* EDIT */
+document.getElementById('edit').onclick = () => {
+  textInput.focus();
+};
 
-/* Открытие */
-const openNote = n => {
+/* CLOSE */
+document.getElementById('close').onclick = () =>
+  modal.classList.remove('active');
+
+/* RENDER */
+async function render(filter = '') {
+  const notes = await getAllNotes();
+  notesEl.innerHTML = '';
+
+  notes.forEach(n => {
+    if (
+      n.title.toLowerCase().includes(filter) ||
+      n.text.toLowerCase().includes(filter)
+    ) {
+      const d = document.createElement('div');
+      d.className = 'note';
+      d.textContent = n.title;
+      d.onclick = () => openNote(n);
+      notesEl.appendChild(d);
+    }
+  });
+}
+
+function openNote(n) {
   currentId = n.id;
   titleInput.value = n.title;
   textInput.value = n.text;
   mediaArr = n.media || [];
-  renderMedia(mediaList, mediaArr, removeMedia);
+  viewer.render(mediaArr);
   modal.classList.add('active');
-};
+}
 
-/* Поиск */
 document.getElementById('search').oninput = e =>
-  renderNotes(notesEl, e.target.value.toLowerCase(), openNote);
+  render(e.target.value.toLowerCase());
 
-enableSwipeClose(card, modal);
-
-openDB().then(() =>
-  renderNotes(notesEl, '', openNote)
-);
+openDB().then(render);
