@@ -42,14 +42,23 @@ main{
 .note{
   background:#000;
   width:100%;
-  min-height:90px;
   border-radius:20px;
   padding:14px;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
   font-weight:600;
   text-align:center;
+  cursor:pointer;
+  gap:6px;
+}
+
+.note h4{ margin-bottom:6px; }
+.note img, .note video{
+  width:100%;
+  border-radius:10px;
+  max-height:120px;
   cursor:pointer;
 }
 
@@ -77,14 +86,15 @@ main{
   align-items:flex-start;
   overflow-y:auto;
   padding:30px 0;
+  z-index:100;
 }
 
 .modal.active{ display:flex; }
 
 .card{
   background:#0f0f0f;
-  width:90%;
-  max-width:420px;
+  width:95%;
+  max-width:480px;
   border-radius:26px;
   padding:20px;
   display:flex;
@@ -104,7 +114,9 @@ input,textarea{
 
 textarea{
   resize:none;
-  min-height:140px;
+  min-height:200px;
+  max-height:400px;
+  overflow-y:auto;
 }
 
 /* MEDIA */
@@ -114,8 +126,6 @@ textarea{
   gap:12px;
   max-height:250px;
   overflow-y:auto;
-  scrollbar-width: thin;
-  scrollbar-color: #666 #222;
 }
 
 .media-list::-webkit-scrollbar{
@@ -135,6 +145,7 @@ textarea{
 .media-item video{
   width:100%;
   border-radius:16px;
+  cursor:pointer;
 }
 
 .media-item button{
@@ -168,9 +179,22 @@ textarea{
 
 .delete{ background:#ff3b3b; }
 
-/* ПРОКРУТКА */
-.view-title{ font-size:18px; font-weight:700; }
-.view-text{ font-size:16px; line-height:1.5; white-space:pre-wrap; max-height:400px; overflow-y:auto; }
+/* ПРОСМОТР ФОТО НА ВЕСЬ ЭКРАН */
+.fullscreen-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.95);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:200;
+}
+
+.fullscreen-overlay img,
+.fullscreen-overlay video{
+  max-width:95%;
+  max-height:95%;
+}
 </style>
 </head>
 <body>
@@ -198,6 +222,11 @@ textarea{
   </div>
 </div>
 
+<!-- Fullscreen media -->
+<div class="fullscreen-overlay" id="fsOverlay">
+  <div id="fsContent"></div>
+</div>
+
 <script>
 let db;
 let currentId = null;
@@ -210,6 +239,9 @@ const titleInput = document.getElementById('title');
 const textInput = document.getElementById('text');
 const mediaInput = document.getElementById('media');
 const mediaList = document.getElementById('mediaList');
+
+const fsOverlay = document.getElementById('fsOverlay');
+const fsContent = document.getElementById('fsContent');
 
 // IndexedDB
 const openDB = () => new Promise(resolve=>{
@@ -266,6 +298,7 @@ function drawMedia(){
     div.innerHTML=
       (m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls></video>`)
       +`<button onclick="removeMedia(${i})">✖</button>`;
+    div.querySelector('img,video')?.addEventListener('click',()=>showFullscreen(m));
     mediaList.appendChild(div);
   });
 }
@@ -274,6 +307,12 @@ window.removeMedia=i=>{
   mediaArr.splice(i,1);
   drawMedia();
 };
+
+function showFullscreen(m){
+  fsContent.innerHTML = m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls autoplay></video>`;
+  fsOverlay.style.display='flex';
+}
+fsOverlay.onclick=()=>fsOverlay.style.display='none';
 
 document.querySelector('.add-btn').onclick=()=>{
   currentId=null;
@@ -312,7 +351,9 @@ async function render(filter=''){
     if(n.title.toLowerCase().includes(filter)||n.text.toLowerCase().includes(filter)){
       const d=document.createElement('div');
       d.className='note';
-      d.textContent=n.title;
+      d.innerHTML = `<h4>${n.title}</h4>` + n.media.map(m=>{
+        return m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls></video>`;
+      }).join('');
       d.onclick=()=>openNote(n);
       notesEl.appendChild(d);
     }
