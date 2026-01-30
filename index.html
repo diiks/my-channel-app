@@ -95,8 +95,8 @@ main{
 }
 
 input,textarea{
-  background:#1c1c1c;
-  border:1px solid #333;
+  background:#2c2c2c;
+  border:none;
   border-radius:16px;
   padding:12px;
   color:white;
@@ -112,6 +112,19 @@ textarea{
   display:flex;
   flex-direction:column;
   gap:12px;
+  max-height:250px;
+  overflow-y:auto;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #222;
+}
+
+.media-list::-webkit-scrollbar{
+  width:6px;
+}
+
+.media-list::-webkit-scrollbar-thumb{
+  background:#666;
+  border-radius:3px;
 }
 
 .media-item{
@@ -150,6 +163,7 @@ textarea{
   border:none;
   background:#222;
   color:white;
+  font-weight:600;
 }
 
 .delete{ background:#ff3b3b; }
@@ -171,13 +185,13 @@ textarea{
 <button class="add-btn">+</button>
 
 <div class="modal" id="modal">
-  <div class="card">
+  <div class="card" id="card">
     <input id="title" placeholder="Тема">
     <textarea id="text" placeholder="Текст заметки"></textarea>
     <input type="file" id="media" multiple accept="image/*,video/*">
     <div class="media-list" id="mediaList"></div>
     <div class="actions">
-      <button class="btn" id="close">✖</button>
+      <button class="btn" id="close">✖ Закрыть</button>
       <button class="btn delete" id="delete">Удалить</button>
       <button class="btn" id="save">Сохранить</button>
     </div>
@@ -189,62 +203,77 @@ let db;
 let currentId = null;
 let mediaArr = [];
 
-const openDB = () => new Promise(resolve => {
-  const req = indexedDB.open('DIX_DB', 1);
-  req.onupgradeneeded = e => {
-    db = e.target.result;
-    db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
-  };
-  req.onsuccess = e => { db = e.target.result; resolve(); };
-});
-
-const getAllNotes = () => new Promise(resolve => {
-  const tx = db.transaction('notes', 'readonly');
-  const req = tx.objectStore('notes').getAll();
-  req.onsuccess = () => resolve(req.result);
-});
-
-const saveNote = note => new Promise(resolve => {
-  const tx = db.transaction('notes', 'readwrite');
-  tx.objectStore('notes').put(note);
-  tx.oncomplete = resolve;
-});
-
-const deleteNote = id => new Promise(resolve => {
-  const tx = db.transaction('notes', 'readwrite');
-  tx.objectStore('notes').delete(id);
-  tx.oncomplete = resolve;
-});
-
 const notesEl = document.getElementById('notes');
 const modal = document.getElementById('modal');
+const card = document.getElementById('card');
 const titleInput = document.getElementById('title');
 const textInput = document.getElementById('text');
 const mediaInput = document.getElementById('media');
 const mediaList = document.getElementById('mediaList');
 
-async function render(filter=''){
-  const notes = await getAllNotes();
-  notesEl.innerHTML='';
-  notes.forEach(n=>{
-    if(n.title.toLowerCase().includes(filter) || n.text.toLowerCase().includes(filter)){
-      const d=document.createElement('div');
-      d.className='note';
-      d.textContent=n.title; // Превью — только тема
-      d.onclick=()=>openNote(n);
-      notesEl.appendChild(d);
-    }
+// IndexedDB
+const openDB = () => new Promise(resolve=>{
+  const req = indexedDB.open('DIX_DB',1);
+  req.onupgradeneeded = e=>{
+    db = e.target.result;
+    db.createObjectStore('notes',{ keyPath:'id', autoIncrement:true });
+  };
+  req.onsuccess = e=>{ db = e.target.result; resolve(); };
+});
+
+const getAllNotes = () => new Promise(resolve=>{
+  const tx = db.transaction('notes','readonly');
+  const req = tx.objectStore('notes').getAll();
+  req.onsuccess = () => resolve(req.result);
+});
+
+const addNote = note => new Promise(resolve=>{
+  const tx = db.transaction('notes','readwrite');
+  const store = tx.objectStore('notes');
+  if(currentId==null) store.add(note);
+  else store.put({...note,id:currentId});
+  tx.oncomplete = resolve;
+});
+
+const deleteNote = id => new Promise(resolve=>{
+  const tx = db.transaction('notes','readwrite');
+  tx.objectStore('notes').delete(id);
+  tx.oncomplete = resolve;
+});
+
+// Base64
+const fileToBase64 = file => new Promise((res,rej)=>{
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = ()=>res(reader.result);
+  reader.onerror = e=>rej(e);
+});
+
+mediaInput.onchange=async()=>{
+  const files=[...mediaInput.files];
+  for(const f of files){
+    const base64 = await fileToBase64(f);
+    mediaArr.push({ type:f.type, url:base64 });
+  }
+  drawMedia();
+};
+
+function drawMedia(){
+  mediaList.innerHTML='';
+  mediaArr.forEach((m,i)=>{
+    const div=document.createElement('div');
+    div.className='media-item';
+    div.innerHTML=
+      (m.type.startsWith('image')?`<img src="${m.url}">`:`<video src="${m.url}" controls></video>`)
+      +`<button onclick="removeMedia(${i})">✖</button>`;
+    mediaList.appendChild(div);
   });
 }
 
-function openNote(n){
-  currentId = n.id;
-  titleInput.value = n.title;
-  textInput.value = n.text;
-  mediaArr = [...n.media];
+window.removeMedia=i=>{
+  mediaArr.splice(i,1);
   drawMedia();
-  modal.classList.add('active');
-}
+};
 
 document.querySelector('.add-btn').onclick=()=>{
   currentId=null;
@@ -259,13 +288,11 @@ document.getElementById('close').onclick=()=>modal.classList.remove('active');
 
 document.getElementById('save').onclick=async()=>{
   if(!titleInput.value.trim()) return;
-  const note = {
-    id: currentId,
-    title: titleInput.value,
-    text: textInput.value,
-    media: mediaArr
-  };
-  await saveNote(note);
+  await addNote({
+    title:titleInput.value,
+    text:textInput.value,
+    media:mediaArr
+  });
   modal.classList.remove('active');
   render();
 };
@@ -278,46 +305,41 @@ document.getElementById('delete').onclick=async()=>{
   }
 };
 
-// 🔹 Конвертация файлов в Base64
-const fileToBase64 = (file) => new Promise((resolve,reject)=>{
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = ()=>resolve(reader.result);
-  reader.onerror = e=>reject(e);
-});
-
-mediaInput.onchange=async()=>{
-  const files=[...mediaInput.files];
-  for(const f of files){
-    const base64=await fileToBase64(f);
-    mediaArr.push({ type:f.type, url:base64 });
-  }
-  drawMedia();
-};
-
-function drawMedia(){
-  mediaList.innerHTML='';
-  mediaArr.forEach((m,i)=>{
-    const div=document.createElement('div');
-    div.className='media-item';
-    div.innerHTML=
-      (m.type.startsWith('image')
-      ?`<img src="${m.url}">`
-      :`<video src="${m.url}" controls></video>`)
-      +`<button onclick="removeMedia(${i})">✖</button>`;
-    mediaList.appendChild(div);
+async function render(filter=''){
+  const notes = await getAllNotes();
+  notesEl.innerHTML='';
+  notes.forEach(n=>{
+    if(n.title.toLowerCase().includes(filter)||n.text.toLowerCase().includes(filter)){
+      const d=document.createElement('div');
+      d.className='note';
+      d.textContent=n.title;
+      d.onclick=()=>openNote(n);
+      notesEl.appendChild(d);
+    }
   });
 }
 
-window.removeMedia=i=>{
-  mediaArr.splice(i,1);
+function openNote(n){
+  currentId=n.id;
+  titleInput.value=n.title;
+  textInput.value=n.text;
+  mediaArr=[...n.media];
   drawMedia();
-};
+  modal.classList.add('active');
+}
 
+// Поиск
 document.querySelector('.search').oninput=e=>render(e.target.value.toLowerCase());
+
+// Свайп для закрытия
+let startX=0;
+card.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; });
+card.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-startX;
+  if(dx<-80) modal.classList.remove('active');
+});
 
 openDB().then(render);
 </script>
-
 </body>
 </html>
