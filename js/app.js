@@ -4,16 +4,27 @@
 let notes = JSON.parse(localStorage.getItem('notes') || '[]');
 let currentId = null;
 let isEditing = false;
+
 let media = [];
 let currentMediaIndex = 0;
+
+/* fullscreen state */
+let scale = 1;
+let lastScale = 1;
+let startDist = 0;
+let posX = 0;
+let posY = 0;
+let startX = 0;
+let startY = 0;
+let lastTap = 0;
 
 /* =========================
    ELEMENTS
 ========================= */
 const notesEl = document.getElementById('notes');
+
 const modal = document.getElementById('modal');
 const card = document.getElementById('card');
-const fullscreen = document.getElementById('fullscreen');
 
 const titleEl = document.getElementById('title');
 const textEl = document.getElementById('text');
@@ -22,7 +33,11 @@ const mediaInput = document.getElementById('mediaInput');
 const track = document.getElementById('mediaTrack');
 const indicator = document.getElementById('mediaIndicator');
 
+const fullscreen = document.getElementById('fullscreen');
 const fullscreenImg = document.getElementById('fullscreenImg');
+const closeFullscreenBtn = document.getElementById('closeFullscreen');
+
+const editBtn = document.getElementById('edit');
 
 /* =========================
    HELPERS
@@ -33,7 +48,7 @@ function setEditable(value) {
 }
 
 /* =========================
-   RENDER NOTES
+   RENDER NOTES GRID
 ========================= */
 function renderNotes() {
   notesEl.innerHTML = '';
@@ -108,7 +123,7 @@ function renderMedia() {
 }
 
 /* =========================
-   MEDIA INDICATOR
+   MEDIA SCROLL
 ========================= */
 track.addEventListener('scroll', () => {
   const width = track.clientWidth;
@@ -117,27 +132,106 @@ track.addEventListener('scroll', () => {
 });
 
 function updateIndicator() {
-  if (!media.length) {
-    indicator.textContent = '';
-    return;
-  }
-  indicator.textContent = `${currentMediaIndex + 1} / ${media.length}`;
+  indicator.textContent = media.length
+    ? `${currentMediaIndex + 1} / ${media.length}`
+    : '';
 }
 
 /* =========================
-   FULLSCREEN
+   FULLSCREEN OPEN / CLOSE
 ========================= */
 function openFullscreen(index) {
   currentMediaIndex = index;
-  fullscreenImg.src = URL.createObjectURL(media[currentMediaIndex]);
+  fullscreenImg.src = URL.createObjectURL(media[index]);
   fullscreen.classList.add('active');
-  updateIndicator();
+  resetFullscreenTransform();
 }
 
 function closeFullscreen() {
   fullscreen.classList.remove('active');
-  fullscreenImg.src = '';
+  resetFullscreenTransform();
 }
+
+closeFullscreenBtn.onclick = closeFullscreen;
+
+/* =========================
+   FULLSCREEN TRANSFORM
+========================= */
+function applyTransform() {
+  fullscreenImg.style.transform =
+    `translate(${posX}px, ${posY}px) scale(${scale})`;
+}
+
+function resetFullscreenTransform() {
+  scale = 1;
+  posX = 0;
+  posY = 0;
+  fullscreenImg.style.transform = '';
+  closeFullscreenBtn.style.opacity = '1';
+}
+
+/* =========================
+   FULLSCREEN GESTURES
+========================= */
+fullscreen.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    startDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    lastScale = scale;
+  }
+
+  if (e.touches.length === 1) {
+    startX = e.touches[0].clientX - posX;
+    startY = e.touches[0].clientY - posY;
+  }
+});
+
+fullscreen.addEventListener('touchmove', e => {
+  if (e.touches.length === 2) {
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    scale = Math.min(Math.max(1, lastScale * (dist / startDist)), 4);
+    applyTransform();
+    closeFullscreenBtn.style.opacity = scale > 1 ? '0' : '1';
+    return;
+  }
+
+  if (e.touches.length === 1 && scale > 1) {
+    posX = e.touches[0].clientX - startX;
+    posY = e.touches[0].clientY - startY;
+    applyTransform();
+  }
+});
+
+fullscreen.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTap < 300) {
+    scale = scale === 1 ? 2 : 1;
+    posX = 0;
+    posY = 0;
+    applyTransform();
+  }
+  lastTap = now;
+});
+
+/* =========================
+   SWIPE DOWN TO CLOSE
+========================= */
+let startY = 0;
+
+fullscreen.addEventListener('touchstart', e => {
+  if (scale === 1) startY = e.touches[0].clientY;
+});
+
+fullscreen.addEventListener('touchend', e => {
+  if (scale !== 1) return;
+  const dy = e.changedTouches[0].clientY - startY;
+  if (dy > 120) closeFullscreen();
+});
 
 /* =========================
    BUTTONS
@@ -156,7 +250,6 @@ document.getElementById('openAdd').onclick = () => {
 };
 
 document.getElementById('close').onclick = closeModal;
-document.getElementById('closeFullscreen').onclick = closeFullscreen;
 
 document.getElementById('addMedia').onclick = () => {
   if (!isEditing) return;
@@ -172,7 +265,7 @@ mediaInput.onchange = () => {
 /* =========================
    EDIT
 ========================= */
-document.getElementById('edit').onclick = () => {
+editBtn.onclick = () => {
   isEditing = true;
   setEditable(true);
   titleEl.focus();
@@ -190,7 +283,7 @@ document.getElementById('save').onclick = () => {
     id: currentId,
     title: titleEl.value,
     text: textEl.value,
-    media
+    media: media
   };
 
   notes = notes.filter(n => n.id !== currentId);
@@ -219,142 +312,6 @@ document.getElementById('delete').onclick = () => {
 };
 
 /* =========================
-   SWIPE TO CLOSE NOTE
-========================= */
-let startX = 0;
-let startTarget = null;
-
-card.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  startTarget = e.target;
-});
-
-card.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - startX;
-
-  if (startTarget.closest('.media-track')) return;
-
-  if (dx < -80) {
-    closeModal();
-  }
-});
-
-/* =========================
-   STEP 6: FULLSCREEN SWIPE NAV
-========================= */
-let fsStartX = 0;
-
-fullscreen.addEventListener('touchstart', e => {
-  fsStartX = e.touches[0].clientX;
-});
-
-fullscreen.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - fsStartX;
-
-  if (Math.abs(dx) < 60) return;
-
-  if (dx < 0) {
-    // next
-    if (currentMediaIndex < media.length - 1) {
-      currentMediaIndex++;
-      fullscreenImg.src = URL.createObjectURL(media[currentMediaIndex]);
-      updateIndicator();
-    } else {
-      closeFullscreen();
-    }
-  } else {
-    // prev
-    if (currentMediaIndex > 0) {
-      currentMediaIndex--;
-      fullscreenImg.src = URL.createObjectURL(media[currentMediaIndex]);
-      updateIndicator();
-    } else {
-      closeFullscreen();
-    }
-  }
-});
-
-/* =========================
    INIT
 ========================= */
 renderNotes();
-/* =========================
-   STEP 7: FULLSCREEN ZOOM
-========================= */
-let scale = 1;
-let lastScale = 1;
-let startDist = 0;
-
-let posX = 0;
-let posY = 0;
-let startX = 0;
-let startY = 0;
-
-let lastTap = 0;
-
-function applyTransform() {
-  fullscreenImg.style.transform =
-    `translate(${posX}px, ${posY}px) scale(${scale})`;
-}
-
-/* --- DOUBLE TAP --- */
-fullscreen.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - lastTap < 300 && e.touches?.length !== 2) {
-    scale = scale === 1 ? 2 : 1;
-    posX = 0;
-    posY = 0;
-    applyTransform();
-  }
-  lastTap = now;
-});
-
-/* --- PINCH START --- */
-fullscreen.addEventListener('touchstart', e => {
-  if (e.touches.length === 2) {
-    startDist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    lastScale = scale;
-  }
-
-  if (e.touches.length === 1) {
-    startX = e.touches[0].clientX - posX;
-    startY = e.touches[0].clientY - posY;
-  }
-});
-
-/* --- PINCH MOVE / DRAG --- */
-fullscreen.addEventListener('touchmove', e => {
-  if (e.touches.length === 2) {
-    const dist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    scale = Math.min(Math.max(1, lastScale * (dist / startDist)), 4);
-    applyTransform();
-    return;
-  }
-
-  if (e.touches.length === 1 && scale > 1) {
-    posX = e.touches[0].clientX - startX;
-    posY = e.touches[0].clientY - startY;
-    applyTransform();
-  }
-});
-
-/* --- RESET ON CLOSE --- */
-function resetFullscreenTransform() {
-  scale = 1;
-  posX = 0;
-  posY = 0;
-  fullscreenImg.style.transform = '';
-}
-
-/* PATCH closeFullscreen */
-const _closeFullscreen = closeFullscreen;
-closeFullscreen = () => {
-  resetFullscreenTransform();
-  _closeFullscreen();
-};
