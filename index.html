@@ -3,53 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notes</title>
-
+  <title>DIX</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
   <div id="app">
-    <!-- список заметок -->
-    <div id="notesList"></div>
+    <div id="notes"></div>
   </div>
 
-  <!-- кнопка добавления -->
   <button id="openAdd">+</button>
 
-  <!-- МОДАЛКА (ВАЖНО: hidden!) -->
-  <div class="modal hidden" id="noteModal">
-    <div class="card">
+  <!-- MODAL -->
+  <div class="modal hidden" id="modal">
+    <div class="card" id="card">
 
       <button class="card-close" id="closeModal">✕</button>
 
-      <input type="text" id="noteTitle" placeholder="Заголовок" />
+      <input type="text" id="title" placeholder="Заголовок" />
+      <textarea id="text" placeholder="Текст заметки"></textarea>
 
-      <textarea id="noteText" placeholder="Текст заметки"></textarea>
-
-      <!-- медиа -->
       <div class="media-wrapper">
-        <div class="media-list" id="mediaList"></div>
+        <div class="media-list" id="mediaTrack"></div>
         <div class="media-indicator" id="mediaIndicator"></div>
       </div>
 
-      <!-- действия -->
+      <input type="file" id="mediaInput" accept="image/*,video/*" multiple hidden>
+
       <div class="card-actions">
-        <button class="action-btn delete" id="deleteNote">🗑️</button>
-        <button class="action-btn" id="editNote">✏️</button>
+        <button class="action-btn delete" id="delete">🗑️</button>
         <button class="action-btn" id="addMedia">📸</button>
-        <button class="action-btn" id="saveNote">✅</button>
+        <button class="action-btn" id="save">✅</button>
       </div>
 
     </div>
   </div>
 
-  <!-- fullscreen media -->
-  <div class="media-fullscreen hidden" id="mediaFullscreen">
+  <!-- FULLSCREEN -->
+  <div class="media-fullscreen hidden" id="fullscreen">
     <button class="media-fullscreen-close" id="closeFullscreen">✕</button>
-    <div id="fullscreenContent"></div>
+    <img id="fullscreenImg">
   </div>
 
-  <script src="js/app.js"></script>
+  <!-- ВАЖНО -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
