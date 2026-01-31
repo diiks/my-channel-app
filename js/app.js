@@ -66,4 +66,190 @@ function openNote(note) {
   titleEl.value = note.title;
   textEl.value = note.text;
 
-  media
+  media = note.media || [];
+  renderMedia();
+
+  isEditing = false;
+  setEditable(false);
+
+  openModal();
+}
+
+/* =========================
+   MEDIA RENDER
+========================= */
+function renderMedia() {
+  track.innerHTML = '';
+  currentMediaIndex = 0;
+
+  if (!media.length) {
+    indicator.textContent = '';
+    return;
+  }
+
+  media.forEach(file => {
+    const url = URL.createObjectURL(file);
+    const item = document.createElement('div');
+    item.className = 'media-item';
+
+    if (file.type.startsWith('video')) {
+      item.innerHTML = `<video src="${url}" controls></video>`;
+    } else {
+      item.innerHTML = `<img src="${url}">`;
+      item.onclick = () => openFullscreen(url);
+    }
+
+    track.appendChild(item);
+  });
+
+  updateIndicator();
+}
+
+/* =========================
+   MEDIA INDICATOR
+========================= */
+track.addEventListener('scroll', () => {
+  const width = track.clientWidth;
+  currentMediaIndex = Math.round(track.scrollLeft / width);
+  updateIndicator();
+});
+
+function updateIndicator() {
+  indicator.textContent = `${currentMediaIndex + 1} / ${media.length}`;
+}
+
+/* =========================
+   FULLSCREEN
+========================= */
+function openFullscreen(url) {
+  fullscreenImg.src = url;
+  fullscreen.classList.add('active');
+}
+
+function closeFullscreen() {
+  fullscreen.classList.remove('active');
+  fullscreenImg.src = '';
+}
+
+/* =========================
+   BUTTONS
+========================= */
+document.getElementById('openAdd').onclick = () => {
+  currentId = null;
+  titleEl.value = '';
+  textEl.value = '';
+  media = [];
+
+  renderMedia();
+
+  isEditing = true;
+  setEditable(true);
+  openModal();
+};
+
+document.getElementById('close').onclick = closeModal;
+document.getElementById('closeFullscreen').onclick = closeFullscreen;
+
+document.getElementById('addMedia').onclick = () => {
+  if (!isEditing) return;
+  mediaInput.click();
+};
+
+mediaInput.onchange = () => {
+  media.push(...mediaInput.files);
+  mediaInput.value = '';
+  renderMedia();
+};
+
+/* =========================
+   EDIT
+========================= */
+document.getElementById('edit').onclick = () => {
+  isEditing = true;
+  setEditable(true);
+  titleEl.focus();
+};
+
+/* =========================
+   SAVE
+========================= */
+document.getElementById('save').onclick = () => {
+  if (!titleEl.value.trim()) return;
+
+  if (!currentId) currentId = Date.now();
+
+  const note = {
+    id: currentId,
+    title: titleEl.value,
+    text: textEl.value,
+    media
+  };
+
+  notes = notes.filter(n => n.id !== currentId);
+  notes.unshift(note);
+
+  localStorage.setItem('notes', JSON.stringify(notes));
+
+  isEditing = false;
+  setEditable(false);
+
+  closeModal();
+  renderNotes();
+};
+
+/* =========================
+   DELETE
+========================= */
+document.getElementById('delete').onclick = () => {
+  if (!currentId) return;
+
+  notes = notes.filter(n => n.id !== currentId);
+  localStorage.setItem('notes', JSON.stringify(notes));
+
+  closeModal();
+  renderNotes();
+};
+
+/* =========================
+   STEP 4: SWIPE TO CLOSE NOTE
+========================= */
+let startX = 0;
+let startTarget = null;
+
+card.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+  startTarget = e.target;
+});
+
+card.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - startX;
+
+  // если свайп начат на медиа — игнор
+  if (startTarget.closest('.media-track')) return;
+
+  if (dx < -80) {
+    closeModal();
+  }
+});
+
+/* =========================
+   STEP 5: SWIPE TO CLOSE FULLSCREEN
+========================= */
+let fsStartX = 0;
+
+fullscreen.addEventListener('touchstart', e => {
+  fsStartX = e.touches[0].clientX;
+});
+
+fullscreen.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - fsStartX;
+
+  if (Math.abs(dx) > 80) {
+    closeFullscreen();
+  }
+});
+
+/* =========================
+   INIT
+========================= */
+renderNotes();
