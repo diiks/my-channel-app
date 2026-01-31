@@ -4,6 +4,7 @@
 let notes = JSON.parse(localStorage.getItem('notes') || '[]');
 let currentId = null;
 let media = [];
+let isEditing = false;
 
 /* =========================
    ELEMENTS
@@ -21,6 +22,16 @@ const track = document.getElementById('mediaTrack');
 const indicator = document.getElementById('mediaIndicator');
 
 const fullscreenImg = document.getElementById('fullscreenImg');
+
+const editBtn = document.getElementById('edit');
+
+/* =========================
+   HELPERS
+========================= */
+function setEditable(value) {
+  titleEl.disabled = !value;
+  textEl.disabled = !value;
+}
 
 /* =========================
    RENDER NOTES
@@ -56,15 +67,17 @@ function openNote(note) {
   titleEl.value = note.title;
   textEl.value = note.text;
 
-  // media пока не восстанавливаем из localStorage
   media = [];
   renderMedia();
+
+  isEditing = false;
+  setEditable(false);
 
   openModal();
 }
 
 /* =========================
-   MEDIA (только в памяти)
+   MEDIA
 ========================= */
 function renderMedia() {
   track.innerHTML = '';
@@ -101,6 +114,10 @@ document.getElementById('openAdd').onclick = () => {
   textEl.value = '';
   media = [];
   renderMedia();
+
+  isEditing = true;
+  setEditable(true);
+
   openModal();
 };
 
@@ -108,6 +125,7 @@ document.getElementById('close').onclick = closeModal;
 document.getElementById('closeFullscreen').onclick = closeFullscreen;
 
 document.getElementById('addMedia').onclick = () => {
+  if (!isEditing) return;
   mediaInput.click();
 };
 
@@ -117,7 +135,16 @@ mediaInput.onchange = () => {
 };
 
 /* =========================
-   SAVE (🔥 ИСПРАВЛЕНО)
+   EDIT ✏️ (🔥 НОВОЕ)
+========================= */
+editBtn.onclick = () => {
+  isEditing = true;
+  setEditable(true);
+  titleEl.focus();
+};
+
+/* =========================
+   SAVE
 ========================= */
 document.getElementById('save').onclick = () => {
   if (!titleEl.value.trim()) return;
@@ -130,13 +157,15 @@ document.getElementById('save').onclick = () => {
     id: currentId,
     title: titleEl.value,
     text: textEl.value
-    // ❗ media НЕ сохраняем в localStorage
   };
 
   notes = notes.filter(n => n.id !== currentId);
   notes.unshift(note);
 
   localStorage.setItem('notes', JSON.stringify(notes));
+
+  isEditing = false;
+  setEditable(false);
 
   closeModal();
   renderNotes();
