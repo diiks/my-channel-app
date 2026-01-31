@@ -12,40 +12,31 @@ import {
 ========================= */
 let notes = [];
 let currentId = null;
-let isEditing = false;
 let media = [];
 let mediaIds = [];
 let currentMediaIndex = 0;
 
 /* =========================
-   ELEMENTS
+   ELEMENTS (СОВПАДАЮТ С HTML)
 ========================= */
-const notesEl = document.getElementById('notesList');
-const modal = document.getElementById('noteModal');
-const card = modal.querySelector('.card');
+const notesEl = document.getElementById('notes');
 
-const titleEl = document.getElementById('noteTitle');
-const textEl = document.getElementById('noteText');
+const modal = document.getElementById('modal');
+const card = document.getElementById('card');
 
-const mediaInput = document.createElement('input');
-mediaInput.type = 'file';
-mediaInput.multiple = true;
-mediaInput.accept = 'image/*,video/*';
+const titleEl = document.getElementById('title');
+const textEl = document.getElementById('text');
 
-const track = document.getElementById('mediaList');
+const mediaInput = document.getElementById('mediaInput');
+const track = document.getElementById('mediaTrack');
 const indicator = document.getElementById('mediaIndicator');
 
-const fullscreen = document.getElementById('mediaFullscreen');
-const fullscreenContent = document.getElementById('fullscreenContent');
+const fullscreen = document.getElementById('fullscreen');
+const fullscreenImg = document.getElementById('fullscreenImg');
 
 /* =========================
    HELPERS
 ========================= */
-const setEditable = v => {
-  titleEl.disabled = !v;
-  textEl.disabled = !v;
-};
-
 const openModal = () => modal.classList.remove('hidden');
 const closeModal = () => modal.classList.add('hidden');
 
@@ -56,12 +47,12 @@ async function renderNotes() {
   notes = await getAllNotes();
   notesEl.innerHTML = '';
 
-  notes.forEach(n => {
-    const d = document.createElement('div');
-    d.className = 'note';
-    d.textContent = n.title || 'Без названия';
-    d.onclick = () => openNote(n);
-    notesEl.appendChild(d);
+  notes.forEach(note => {
+    const div = document.createElement('div');
+    div.className = 'note';
+    div.textContent = note.title || 'Без названия';
+    div.onclick = () => openNote(note);
+    notesEl.appendChild(div);
   });
 }
 
@@ -77,14 +68,11 @@ async function openNote(note) {
   media = await getMediaByIds(mediaIds);
 
   renderMedia();
-
-  isEditing = false;
-  setEditable(false);
   openModal();
 }
 
 /* =========================
-   MEDIA
+   MEDIA RENDER
 ========================= */
 function renderMedia() {
   track.innerHTML = '';
@@ -121,26 +109,23 @@ track.addEventListener('scroll', () => {
   updateIndicator();
 });
 
-const updateIndicator = () => {
+function updateIndicator() {
   indicator.textContent = media.length
     ? `${currentMediaIndex + 1} / ${media.length}`
     : '';
-};
+}
 
 /* =========================
    FULLSCREEN
 ========================= */
-function openFullscreen(i) {
-  currentMediaIndex = i;
-  fullscreenContent.innerHTML = '';
-
-  const m = media[i];
+function openFullscreen(index) {
+  const m = media[index];
   const url = URL.createObjectURL(m.blob);
 
   if (m.type.startsWith('video')) {
-    fullscreenContent.innerHTML = `<video src="${url}" controls autoplay></video>`;
+    fullscreenImg.outerHTML = `<video src="${url}" controls autoplay></video>`;
   } else {
-    fullscreenContent.innerHTML = `<img src="${url}">`;
+    fullscreenImg.src = url;
   }
 
   fullscreen.classList.remove('hidden');
@@ -150,7 +135,7 @@ document.getElementById('closeFullscreen').onclick = () =>
   fullscreen.classList.add('hidden');
 
 /* =========================
-   ADD NOTE (+)
+   ADD NOTE
 ========================= */
 document.getElementById('openAdd').onclick = () => {
   currentId = Date.now();
@@ -158,11 +143,7 @@ document.getElementById('openAdd').onclick = () => {
   textEl.value = '';
   media = [];
   mediaIds = [];
-
   renderMedia();
-
-  isEditing = true;
-  setEditable(true);
   openModal();
 };
 
@@ -175,7 +156,7 @@ document.getElementById('closeModal').onclick = closeModal;
    ADD MEDIA
 ========================= */
 document.getElementById('addMedia').onclick = () => {
-  if (isEditing) mediaInput.click();
+  mediaInput.click();
 };
 
 mediaInput.onchange = async () => {
@@ -189,9 +170,9 @@ mediaInput.onchange = async () => {
 };
 
 /* =========================
-   SAVE
+   SAVE NOTE (✔ РАБОТАЕТ)
 ========================= */
-document.getElementById('saveNote').onclick = async () => {
+document.getElementById('save').onclick = async () => {
   if (!titleEl.value.trim()) return;
 
   await saveNote({
@@ -206,9 +187,10 @@ document.getElementById('saveNote').onclick = async () => {
 };
 
 /* =========================
-   DELETE
+   DELETE NOTE
 ========================= */
-document.getElementById('deleteNote').onclick = async () => {
+document.getElementById('delete').onclick = async () => {
+  if (!currentId) return;
   await deleteNote(currentId);
   closeModal();
   renderNotes();
