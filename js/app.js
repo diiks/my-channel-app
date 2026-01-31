@@ -3,8 +3,9 @@
 ========================= */
 let notes = JSON.parse(localStorage.getItem('notes') || '[]');
 let currentId = null;
-let media = [];
 let isEditing = false;
+let media = [];
+let currentMediaIndex = 0;
 
 /* =========================
    ELEMENTS
@@ -77,20 +78,50 @@ function openNote(note) {
 }
 
 /* =========================
-   MEDIA
+   MEDIA RENDER (🔥 ОСНОВНОЕ)
 ========================= */
 function renderMedia() {
   track.innerHTML = '';
-  indicator.textContent = media.length ? `1 / ${media.length}` : '';
+  currentMediaIndex = 0;
 
-  media.forEach(file => {
+  if (!media.length) {
+    indicator.textContent = '';
+    return;
+  }
+
+  media.forEach((file, index) => {
     const url = URL.createObjectURL(file);
-    const div = document.createElement('div');
-    div.className = 'media-item';
-    div.innerHTML = `<img src="${url}">`;
-    div.onclick = () => openFullscreen(url);
-    track.appendChild(div);
+    const item = document.createElement('div');
+    item.className = 'media-item';
+
+    if (file.type.startsWith('video')) {
+      item.innerHTML = `
+        <video src="${url}" controls></video>
+      `;
+    } else {
+      item.innerHTML = `
+        <img src="${url}">
+      `;
+      item.onclick = () => openFullscreen(url);
+    }
+
+    track.appendChild(item);
   });
+
+  updateIndicator();
+}
+
+/* =========================
+   MEDIA SCROLL INDICATOR
+========================= */
+track.addEventListener('scroll', () => {
+  const width = track.clientWidth;
+  currentMediaIndex = Math.round(track.scrollLeft / width);
+  updateIndicator();
+});
+
+function updateIndicator() {
+  indicator.textContent = `${currentMediaIndex + 1} / ${media.length}`;
 }
 
 /* =========================
@@ -131,11 +162,12 @@ document.getElementById('addMedia').onclick = () => {
 
 mediaInput.onchange = () => {
   media.push(...mediaInput.files);
+  mediaInput.value = '';
   renderMedia();
 };
 
 /* =========================
-   EDIT ✏️ (🔥 НОВОЕ)
+   EDIT
 ========================= */
 editBtn.onclick = () => {
   isEditing = true;
