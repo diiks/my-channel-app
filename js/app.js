@@ -9,6 +9,10 @@ let isEditing = false;
 let media = [];
 let currentMediaIndex = 0;
 
+let startX = 0;
+let currentX = 0;
+let isDragging = false;
+
 /* =========================
    ELEMENTS
 ========================= */
@@ -35,7 +39,7 @@ const setEditable = value => {
 };
 
 /* =========================
-   RENDER NOTES
+   NOTES
 ========================= */
 async function renderNotes() {
   notes = await getAllNotes();
@@ -61,7 +65,6 @@ const closeModal = () => modal.classList.remove('active');
 ========================= */
 function openNote(note) {
   currentNote = note;
-
   titleEl.value = note.title;
   textEl.value = note.text;
 
@@ -74,7 +77,7 @@ function openNote(note) {
 }
 
 /* =========================
-   MEDIA RENDER
+   MEDIA
 ========================= */
 function renderMedia() {
   track.innerHTML = '';
@@ -85,7 +88,7 @@ function renderMedia() {
     return;
   }
 
-  media.forEach((m, i) => {
+  media.forEach(m => {
     const url = URL.createObjectURL(m.blob);
     const item = document.createElement('div');
     item.className = 'media-item';
@@ -93,7 +96,7 @@ function renderMedia() {
     if (m.type.startsWith('video')) {
       item.innerHTML = `<video src="${url}" controls></video>`;
     } else {
-      item.innerHTML = `<img src="${url}">`;
+      item.innerHTML = `<img src="${url}" draggable="false">`;
       item.onclick = () => openFullscreen(url);
     }
 
@@ -104,25 +107,51 @@ function renderMedia() {
 }
 
 /* =========================
-   MEDIA SCROLL
+   TELEGRAM-LIKE SWIPE
 ========================= */
-track.addEventListener('scroll', () => {
-  const width = track.clientWidth;
-  currentMediaIndex = Math.round(track.scrollLeft / width);
-  updateIndicator();
+track.addEventListener('pointerdown', e => {
+  startX = e.clientX;
+  currentX = track.scrollLeft;
+  isDragging = true;
+  track.style.scrollBehavior = 'auto';
 });
 
-const updateIndicator = () => {
+track.addEventListener('pointermove', e => {
+  if (!isDragging) return;
+  const dx = startX - e.clientX;
+  track.scrollLeft = currentX + dx;
+});
+
+track.addEventListener('pointerup', snapMedia);
+track.addEventListener('pointerleave', snapMedia);
+
+function snapMedia() {
+  if (!isDragging) return;
+  isDragging = false;
+
+  const width = track.clientWidth;
+  currentMediaIndex = Math.round(track.scrollLeft / width);
+
+  track.style.scrollBehavior = 'smooth';
+  track.scrollLeft = currentMediaIndex * width;
+
+  updateIndicator();
+}
+
+/* =========================
+   INDICATOR
+========================= */
+function updateIndicator() {
   indicator.textContent = `${currentMediaIndex + 1} / ${media.length}`;
-};
+}
 
 /* =========================
    FULLSCREEN
 ========================= */
-const openFullscreen = url => {
+function openFullscreen(url) {
   fullscreenImg.src = url;
   fullscreen.classList.add('active');
-};
+}
 
 document.getElementById('closeFullscreen').onclick = () =>
   fullscreen.classList.remove('active');
@@ -155,20 +184,14 @@ document.getElementById('addMedia').onclick = () => {
   mediaInput.click();
 };
 
-mediaInput.onchange = async () => {
+mediaInput.onchange = () => {
   for (const file of mediaInput.files) {
-    media.push({
-      blob: file,
-      type: file.type
-    });
+    media.push({ blob: file, type: file.type });
   }
   mediaInput.value = '';
   renderMedia();
 };
 
-/* =========================
-   SAVE
-========================= */
 document.getElementById('save').onclick = async () => {
   if (!titleEl.value.trim()) return;
 
@@ -180,16 +203,10 @@ document.getElementById('save').onclick = async () => {
   };
 
   await saveNote(note);
-
-  isEditing = false;
-  setEditable(false);
   closeModal();
   renderNotes();
 };
 
-/* =========================
-   DELETE
-========================= */
 document.getElementById('delete').onclick = async () => {
   if (!currentNote) return;
   await deleteNote(currentNote.id);
