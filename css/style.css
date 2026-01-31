@@ -1,22 +1,56 @@
-/* ===== RESET ===== */
+/* =========================
+   RESET
+========================= */
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 body {
-  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #0e0e0e;
   color: #fff;
   overflow-x: hidden;
 }
 
-/* ===== APP ===== */
+/* =========================
+   APP
+========================= */
 #app {
   padding: 20px;
 }
 
-/* ===== ADD BUTTON ===== */
+/* =========================
+   NOTES LIST
+========================= */
+#notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.note {
+  background: #1a1a1a;
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.note:hover {
+  background: #222;
+}
+
+/* =========================
+   ADD BUTTON
+========================= */
 #openAdd {
   position: fixed;
   bottom: 24px;
@@ -28,10 +62,14 @@ body {
   background: #2f80ff;
   color: #fff;
   font-size: 32px;
+  line-height: 0;
   cursor: pointer;
+  z-index: 50;
 }
 
-/* ===== MODAL ===== */
+/* =========================
+   MODAL
+========================= */
 .modal {
   position: fixed;
   inset: 0;
@@ -46,7 +84,9 @@ body {
   display: none;
 }
 
-/* ===== CARD ===== */
+/* =========================
+   CARD
+========================= */
 .card {
   background: #1a1a1a;
   width: 100%;
@@ -56,10 +96,13 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
   position: relative;
 }
 
-/* ===== CLOSE ===== */
+/* =========================
+   CLOSE BUTTON
+========================= */
 .card-close {
   position: absolute;
   top: 14px;
@@ -68,13 +111,15 @@ body {
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.1);
   color: #fff;
   font-size: 20px;
   cursor: pointer;
 }
 
-/* ===== TITLE ===== */
+/* =========================
+   TITLE
+========================= */
 .card input[type="text"] {
   background: none;
   border: none;
@@ -82,10 +127,11 @@ body {
   color: #fff;
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 10px;
 }
 
-/* ===== TEXT ===== */
+/* =========================
+   TEXT
+========================= */
 .card textarea {
   background: #111;
   border: none;
@@ -99,15 +145,17 @@ body {
   overflow-y: auto;
 }
 
-/* ===== MEDIA ===== */
+/* =========================
+   MEDIA
+========================= */
 .media-wrapper {
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .media-list {
   display: flex;
-  overflow-x: auto;
   gap: 12px;
+  overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
@@ -118,13 +166,13 @@ body {
 
 .media-item {
   flex: 0 0 100%;
-  scroll-snap-align: center;
+  height: 260px;
   background: #000;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 260px;
+  scroll-snap-align: center;
 }
 
 .media-item img,
@@ -134,7 +182,9 @@ body {
   object-fit: contain;
 }
 
-/* ===== MEDIA COUNTER ===== */
+/* =========================
+   MEDIA INDICATOR
+========================= */
 .media-indicator {
   text-align: center;
   margin-top: 6px;
@@ -142,11 +192,13 @@ body {
   opacity: 0.6;
 }
 
-/* ===== ACTIONS ===== */
+/* =========================
+   ACTIONS
+========================= */
 .card-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .action-btn {
@@ -156,7 +208,7 @@ body {
   border: none;
   font-size: 18px;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.1);
   color: #fff;
 }
 
@@ -164,10 +216,9 @@ body {
   background: #ff3b30;
 }
 
-/* ============================= */
-/* ===== FULLSCREEN MEDIA ===== */
-/* ============================= */
-
+/* =========================
+   FULLSCREEN MEDIA
+========================= */
 .media-fullscreen {
   position: fixed;
   inset: 0;
@@ -189,7 +240,9 @@ body {
   object-fit: contain;
 }
 
-/* ===== FULLSCREEN CLOSE ===== */
+/* =========================
+   FULLSCREEN CLOSE
+========================= */
 .media-fullscreen-close {
   position: absolute;
   top: 16px;
@@ -198,7 +251,7 @@ body {
   height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255,255,255,0.15);
   color: #fff;
   font-size: 22px;
   cursor: pointer;
