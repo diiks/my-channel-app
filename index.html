@@ -3,78 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Channel App</title>
+  <title>Notes</title>
 
-  <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <h1>Заметки</h1>
-    <button id="openAdd" class="circle-btn">➕</button>
-  </header>
+  <div id="app">
+    <!-- список заметок -->
+    <div id="notesList"></div>
+  </div>
 
-  <!-- NOTES LIST -->
-  <main id="notes" class="notes"></main>
+  <!-- кнопка добавления -->
+  <button id="openAdd">+</button>
 
-  <!-- MODAL -->
-  <div id="modal" class="modal">
-    <div id="card" class="card">
+  <!-- МОДАЛКА (ВАЖНО: hidden!) -->
+  <div class="modal hidden" id="noteModal">
+    <div class="card">
 
-      <!-- CLOSE -->
-      <button id="close" class="close-btn">✕</button>
+      <button class="card-close" id="closeModal">✕</button>
 
-      <!-- TITLE -->
-      <input
-        id="title"
-        type="text"
-        placeholder="Заголовок"
-        disabled
-      />
+      <input type="text" id="noteTitle" placeholder="Заголовок" />
 
-      <!-- TEXT -->
-      <textarea
-        id="text"
-        placeholder="Текст заметки"
-        disabled
-      ></textarea>
+      <textarea id="noteText" placeholder="Текст заметки"></textarea>
 
-      <!-- MEDIA -->
+      <!-- медиа -->
       <div class="media-wrapper">
-        <div id="mediaTrack" class="media-track"></div>
-        <div id="mediaIndicator" class="media-indicator"></div>
+        <div class="media-list" id="mediaList"></div>
+        <div class="media-indicator" id="mediaIndicator"></div>
       </div>
 
-      <!-- ACTION BUTTONS -->
-      <div class="actions">
-        <button id="delete" class="circle-btn danger">🗑️</button>
-        <button id="edit" class="circle-btn">✏️</button>
-        <button id="addMedia" class="circle-btn">📸</button>
-        <button id="save" class="circle-btn">✅</button>
+      <!-- действия -->
+      <div class="card-actions">
+        <button class="action-btn delete" id="deleteNote">🗑️</button>
+        <button class="action-btn" id="editNote">✏️</button>
+        <button class="action-btn" id="addMedia">📸</button>
+        <button class="action-btn" id="saveNote">✅</button>
       </div>
-
-      <!-- HIDDEN FILE INPUT -->
-      <input
-        id="mediaInput"
-        type="file"
-        accept="image/*,video/*"
-        multiple
-        hidden
-      />
 
     </div>
   </div>
 
-  <!-- FULLSCREEN MEDIA -->
-  <div id="fullscreen" class="fullscreen">
-    <button id="closeFullscreen" class="close-btn">✕</button>
-    <img id="fullscreenImg" />
+  <!-- fullscreen media -->
+  <div class="media-fullscreen hidden" id="mediaFullscreen">
+    <button class="media-fullscreen-close" id="closeFullscreen">✕</button>
+    <div id="fullscreenContent"></div>
   </div>
 
-  <!-- SCRIPTS -->
-  <script type="module" src="js/app.js"></script>
-
+  <script src="js/app.js"></script>
 </body>
 </html>
