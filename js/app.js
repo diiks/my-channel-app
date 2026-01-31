@@ -278,3 +278,83 @@ fullscreen.addEventListener('touchend', e => {
    INIT
 ========================= */
 renderNotes();
+/* =========================
+   STEP 7: FULLSCREEN ZOOM
+========================= */
+let scale = 1;
+let lastScale = 1;
+let startDist = 0;
+
+let posX = 0;
+let posY = 0;
+let startX = 0;
+let startY = 0;
+
+let lastTap = 0;
+
+function applyTransform() {
+  fullscreenImg.style.transform =
+    `translate(${posX}px, ${posY}px) scale(${scale})`;
+}
+
+/* --- DOUBLE TAP --- */
+fullscreen.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTap < 300 && e.touches?.length !== 2) {
+    scale = scale === 1 ? 2 : 1;
+    posX = 0;
+    posY = 0;
+    applyTransform();
+  }
+  lastTap = now;
+});
+
+/* --- PINCH START --- */
+fullscreen.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    startDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    lastScale = scale;
+  }
+
+  if (e.touches.length === 1) {
+    startX = e.touches[0].clientX - posX;
+    startY = e.touches[0].clientY - posY;
+  }
+});
+
+/* --- PINCH MOVE / DRAG --- */
+fullscreen.addEventListener('touchmove', e => {
+  if (e.touches.length === 2) {
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    scale = Math.min(Math.max(1, lastScale * (dist / startDist)), 4);
+    applyTransform();
+    return;
+  }
+
+  if (e.touches.length === 1 && scale > 1) {
+    posX = e.touches[0].clientX - startX;
+    posY = e.touches[0].clientY - startY;
+    applyTransform();
+  }
+});
+
+/* --- RESET ON CLOSE --- */
+function resetFullscreenTransform() {
+  scale = 1;
+  posX = 0;
+  posY = 0;
+  fullscreenImg.style.transform = '';
+}
+
+/* PATCH closeFullscreen */
+const _closeFullscreen = closeFullscreen;
+closeFullscreen = () => {
+  resetFullscreenTransform();
+  _closeFullscreen();
+};
