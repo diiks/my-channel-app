@@ -4,7 +4,6 @@
 let notes = JSON.parse(localStorage.getItem('notes') || '[]');
 let currentId = null;
 let isEditing = false;
-
 let media = [];
 let currentMediaIndex = 0;
 
@@ -14,6 +13,7 @@ let currentMediaIndex = 0;
 const notesEl = document.getElementById('notes');
 const modal = document.getElementById('modal');
 const card = document.getElementById('card');
+const fullscreen = document.getElementById('fullscreen');
 
 const titleEl = document.getElementById('title');
 const textEl = document.getElementById('text');
@@ -22,14 +22,14 @@ const mediaInput = document.getElementById('mediaInput');
 const track = document.getElementById('mediaTrack');
 const indicator = document.getElementById('mediaIndicator');
 
-const fullscreen = document.getElementById('fullscreen');
+const fullscreenImg = document.getElementById('fullscreenImg');
 
 /* =========================
    HELPERS
 ========================= */
-function setEditable(v) {
-  titleEl.disabled = !v;
-  textEl.disabled = !v;
+function setEditable(value) {
+  titleEl.disabled = !value;
+  textEl.disabled = !value;
 }
 
 /* =========================
@@ -37,12 +37,13 @@ function setEditable(v) {
 ========================= */
 function renderNotes() {
   notesEl.innerHTML = '';
+
   notes.forEach(note => {
-    const d = document.createElement('div');
-    d.className = 'note';
-    d.textContent = note.title;
-    d.onclick = () => openNote(note);
-    notesEl.appendChild(d);
+    const div = document.createElement('div');
+    div.className = 'note';
+    div.textContent = note.title;
+    div.onclick = () => openNote(note);
+    notesEl.appendChild(div);
   });
 }
 
@@ -70,6 +71,7 @@ function openNote(note) {
 
   isEditing = false;
   setEditable(false);
+
   openModal();
 }
 
@@ -85,7 +87,7 @@ function renderMedia() {
     return;
   }
 
-  media.forEach((file, index) => {
+  media.forEach(file => {
     const url = URL.createObjectURL(file);
     const item = document.createElement('div');
     item.className = 'media-item';
@@ -93,8 +95,8 @@ function renderMedia() {
     if (file.type.startsWith('video')) {
       item.innerHTML = `<video src="${url}" controls></video>`;
     } else {
-      item.innerHTML = `<img src="${url}" draggable="false">`;
-      item.onclick = () => openFullscreen(index);
+      item.innerHTML = `<img src="${url}">`;
+      item.onclick = () => openFullscreen(url);
     }
 
     track.appendChild(item);
@@ -103,9 +105,12 @@ function renderMedia() {
   updateIndicator();
 }
 
+/* =========================
+   MEDIA INDICATOR
+========================= */
 track.addEventListener('scroll', () => {
-  const w = track.clientWidth;
-  currentMediaIndex = Math.round(track.scrollLeft / w);
+  const width = track.clientWidth;
+  currentMediaIndex = Math.round(track.scrollLeft / width);
   updateIndicator();
 });
 
@@ -116,63 +121,14 @@ function updateIndicator() {
 /* =========================
    FULLSCREEN
 ========================= */
-function openFullscreen(index) {
-  currentMediaIndex = index;
-  showFullscreen();
+function openFullscreen(url) {
+  fullscreenImg.src = url;
   fullscreen.classList.add('active');
-}
-
-function showFullscreen() {
-  const file = media[currentMediaIndex];
-  const url = URL.createObjectURL(file);
-
-  fullscreen.innerHTML = `
-    <button class="close-x" id="closeFullscreen">✖</button>
-    ${
-      file.type.startsWith('video')
-        ? `<video src="${url}" controls autoplay></video>`
-        : `<img src="${url}">`
-    }
-  `;
-
-  document.getElementById('closeFullscreen').onclick = closeFullscreen;
 }
 
 function closeFullscreen() {
   fullscreen.classList.remove('active');
-  fullscreen.innerHTML = '';
 }
-
-/* =========================
-   FULLSCREEN SWIPE
-========================= */
-let fsX = 0;
-let fsY = 0;
-
-fullscreen.addEventListener('touchstart', e => {
-  fsX = e.touches[0].clientX;
-  fsY = e.touches[0].clientY;
-});
-
-fullscreen.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - fsX;
-  const dy = e.changedTouches[0].clientY - fsY;
-
-  if (dy > 80) {
-    closeFullscreen();
-    return;
-  }
-
-  if (dx < -60 && currentMediaIndex < media.length - 1) {
-    currentMediaIndex++;
-    showFullscreen();
-  }
-
-  if (dx > 60 && currentMediaIndex > 0) {
-    currentMediaIndex--;
-    showFullscreen();
-  }
-});
 
 /* =========================
    BUTTONS
@@ -184,12 +140,14 @@ document.getElementById('openAdd').onclick = () => {
   media = [];
 
   renderMedia();
+
   isEditing = true;
   setEditable(true);
   openModal();
 };
 
 document.getElementById('close').onclick = closeModal;
+document.getElementById('closeFullscreen').onclick = closeFullscreen;
 
 document.getElementById('addMedia').onclick = () => {
   if (!isEditing) return;
@@ -202,38 +160,77 @@ mediaInput.onchange = () => {
   renderMedia();
 };
 
+/* =========================
+   EDIT
+========================= */
 document.getElementById('edit').onclick = () => {
   isEditing = true;
   setEditable(true);
+  titleEl.focus();
 };
 
+/* =========================
+   SAVE
+========================= */
 document.getElementById('save').onclick = () => {
   if (!titleEl.value.trim()) return;
 
+  if (!currentId) currentId = Date.now();
+
   const note = {
-    id: currentId || Date.now(),
+    id: currentId,
     title: titleEl.value,
     text: textEl.value,
     media
   };
 
-  notes = notes.filter(n => n.id !== note.id);
+  notes = notes.filter(n => n.id !== currentId);
   notes.unshift(note);
+
   localStorage.setItem('notes', JSON.stringify(notes));
 
   isEditing = false;
   setEditable(false);
+
   closeModal();
   renderNotes();
 };
 
+/* =========================
+   DELETE
+========================= */
 document.getElementById('delete').onclick = () => {
   if (!currentId) return;
+
   notes = notes.filter(n => n.id !== currentId);
   localStorage.setItem('notes', JSON.stringify(notes));
+
   closeModal();
   renderNotes();
 };
+
+/* =========================
+   🔥 STEP 4: SWIPE TO CLOSE
+========================= */
+let startX = 0;
+let startTarget = null;
+
+card.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+  startTarget = e.target;
+});
+
+card.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - startX;
+
+  // ❌ если свайп начат на фото/видео — игнор
+  if (startTarget.closest('.media-track')) return;
+
+  // 👉 свайп влево
+  if (dx < -80) {
+    closeModal();
+  }
+});
 
 /* =========================
    INIT
