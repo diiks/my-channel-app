@@ -1,18 +1,24 @@
-let notes = [];
+let notes = JSON.parse(localStorage.getItem('notes') || '[]');
 let currentId = null;
 let media = [];
-let index = 0;
+let mediaIndex = 0;
 
+/* ELEMENTS */
 const modal = document.getElementById('modal');
 const card = document.getElementById('card');
 const notesEl = document.getElementById('notes');
 
 const titleEl = document.getElementById('title');
 const textEl = document.getElementById('text');
+
 const mediaInput = document.getElementById('mediaInput');
 const track = document.getElementById('mediaTrack');
 const indicator = document.getElementById('mediaIndicator');
 
+const fullscreen = document.getElementById('fullscreen');
+const fullscreenImg = document.getElementById('fullscreenImg');
+
+/* RENDER NOTES */
 function renderNotes() {
   notesEl.innerHTML = '';
   notes.forEach(n => {
@@ -24,18 +30,20 @@ function renderNotes() {
   });
 }
 
+/* OPEN NOTE */
 function openNote(n) {
   currentId = n.id;
   titleEl.value = n.title;
   textEl.value = n.text;
   media = n.media || [];
   renderMedia();
-  modal.classList.add('active');
+  modal.classList.remove('hidden');
 }
 
+/* MEDIA */
 function renderMedia() {
   track.innerHTML = '';
-  index = 0;
+  mediaIndex = 0;
 
   media.forEach(m => {
     const div = document.createElement('div');
@@ -51,19 +59,29 @@ function renderMedia() {
 
 function updateIndicator() {
   indicator.textContent = media.length
-    ? `${index + 1} / ${media.length}`
+    ? `${mediaIndex + 1} / ${media.length}`
     : '';
 }
 
+/* FULLSCREEN */
+function openFullscreen(url) {
+  fullscreenImg.src = url;
+  fullscreen.classList.remove('hidden');
+}
+
+fullscreen.onclick = () => fullscreen.classList.add('hidden');
+
+/* BUTTONS */
 document.getElementById('addMedia').onclick = () => mediaInput.click();
 
 mediaInput.onchange = () => {
-  for (const f of mediaInput.files) media.push(f);
+  media.push(...mediaInput.files);
   renderMedia();
 };
 
 document.getElementById('save').onclick = () => {
-  if (!titleEl.value) return;
+  if (!titleEl.value.trim()) return;
+
   if (!currentId) currentId = Date.now();
 
   const note = {
@@ -74,31 +92,30 @@ document.getElementById('save').onclick = () => {
   };
 
   notes = notes.filter(n => n.id !== currentId);
-  notes.push(note);
+  notes.unshift(note);
 
   localStorage.setItem('notes', JSON.stringify(notes));
-  modal.classList.remove('active');
+  modal.classList.add('hidden');
   renderNotes();
 };
 
 document.getElementById('delete').onclick = () => {
   notes = notes.filter(n => n.id !== currentId);
   localStorage.setItem('notes', JSON.stringify(notes));
-  modal.classList.remove('active');
+  modal.classList.add('hidden');
   renderNotes();
 };
 
 document.getElementById('close').onclick = () =>
-  modal.classList.remove('active');
+  modal.classList.add('hidden');
 
-document.querySelector('.add-btn').onclick = () => {
+document.getElementById('openAdd').onclick = () => {
   currentId = null;
   titleEl.value = '';
   textEl.value = '';
   media = [];
   renderMedia();
-  modal.classList.add('active');
+  modal.classList.remove('hidden');
 };
 
-notes = JSON.parse(localStorage.getItem('notes') || '[]');
 renderNotes();
