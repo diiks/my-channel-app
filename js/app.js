@@ -87,7 +87,7 @@ function renderMedia() {
     return;
   }
 
-  media.forEach(file => {
+  media.forEach((file, index) => {
     const url = URL.createObjectURL(file);
     const item = document.createElement('div');
     item.className = 'media-item';
@@ -95,8 +95,10 @@ function renderMedia() {
     if (file.type.startsWith('video')) {
       item.innerHTML = `<video src="${url}" controls></video>`;
     } else {
-      item.innerHTML = `<img src="${url}">`;
-      item.onclick = () => openFullscreen(url);
+      const img = document.createElement('img');
+      img.src = url;
+      img.onclick = () => openFullscreen(index);
+      item.appendChild(img);
     }
 
     track.appendChild(item);
@@ -115,15 +117,21 @@ track.addEventListener('scroll', () => {
 });
 
 function updateIndicator() {
+  if (!media.length) {
+    indicator.textContent = '';
+    return;
+  }
   indicator.textContent = `${currentMediaIndex + 1} / ${media.length}`;
 }
 
 /* =========================
    FULLSCREEN
 ========================= */
-function openFullscreen(url) {
-  fullscreenImg.src = url;
+function openFullscreen(index) {
+  currentMediaIndex = index;
+  fullscreenImg.src = URL.createObjectURL(media[currentMediaIndex]);
   fullscreen.classList.add('active');
+  updateIndicator();
 }
 
 function closeFullscreen() {
@@ -211,7 +219,7 @@ document.getElementById('delete').onclick = () => {
 };
 
 /* =========================
-   STEP 4: SWIPE TO CLOSE NOTE
+   SWIPE TO CLOSE NOTE
 ========================= */
 let startX = 0;
 let startTarget = null;
@@ -224,7 +232,6 @@ card.addEventListener('touchstart', e => {
 card.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - startX;
 
-  // если свайп начат на медиа — игнор
   if (startTarget.closest('.media-track')) return;
 
   if (dx < -80) {
@@ -233,7 +240,7 @@ card.addEventListener('touchend', e => {
 });
 
 /* =========================
-   STEP 5: SWIPE TO CLOSE FULLSCREEN
+   STEP 6: FULLSCREEN SWIPE NAV
 ========================= */
 let fsStartX = 0;
 
@@ -244,8 +251,26 @@ fullscreen.addEventListener('touchstart', e => {
 fullscreen.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - fsStartX;
 
-  if (Math.abs(dx) > 80) {
-    closeFullscreen();
+  if (Math.abs(dx) < 60) return;
+
+  if (dx < 0) {
+    // next
+    if (currentMediaIndex < media.length - 1) {
+      currentMediaIndex++;
+      fullscreenImg.src = URL.createObjectURL(media[currentMediaIndex]);
+      updateIndicator();
+    } else {
+      closeFullscreen();
+    }
+  } else {
+    // prev
+    if (currentMediaIndex > 0) {
+      currentMediaIndex--;
+      fullscreenImg.src = URL.createObjectURL(media[currentMediaIndex]);
+      updateIndicator();
+    } else {
+      closeFullscreen();
+    }
   }
 });
 
