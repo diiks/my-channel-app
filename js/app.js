@@ -13,27 +13,30 @@ import {
 let notes = [];
 let currentId = null;
 let isEditing = false;
-let media = []; // { id, type, blob }
+let media = [];
 let mediaIds = [];
 let currentMediaIndex = 0;
-let allowSwipeClose = true;
 
 /* =========================
    ELEMENTS
 ========================= */
-const notesEl = document.getElementById('notes');
-const modal = document.getElementById('modal');
-const card = document.getElementById('card');
-const fullscreen = document.getElementById('fullscreen');
+const notesEl = document.getElementById('notesList');
+const modal = document.getElementById('noteModal');
+const card = modal.querySelector('.card');
 
-const titleEl = document.getElementById('title');
-const textEl = document.getElementById('text');
+const titleEl = document.getElementById('noteTitle');
+const textEl = document.getElementById('noteText');
 
-const mediaInput = document.getElementById('mediaInput');
-const track = document.getElementById('mediaTrack');
+const mediaInput = document.createElement('input');
+mediaInput.type = 'file';
+mediaInput.multiple = true;
+mediaInput.accept = 'image/*,video/*';
+
+const track = document.getElementById('mediaList');
 const indicator = document.getElementById('mediaIndicator');
 
-const fullscreenImg = document.getElementById('fullscreenImg');
+const fullscreen = document.getElementById('mediaFullscreen');
+const fullscreenContent = document.getElementById('fullscreenContent');
 
 /* =========================
    HELPERS
@@ -42,6 +45,9 @@ const setEditable = v => {
   titleEl.disabled = !v;
   textEl.disabled = !v;
 };
+
+const openModal = () => modal.classList.remove('hidden');
+const closeModal = () => modal.classList.add('hidden');
 
 /* =========================
    RENDER NOTES
@@ -53,7 +59,7 @@ async function renderNotes() {
   notes.forEach(n => {
     const d = document.createElement('div');
     d.className = 'note';
-    d.textContent = n.title;
+    d.textContent = n.title || 'Без названия';
     d.onclick = () => openNote(n);
     notesEl.appendChild(d);
   });
@@ -73,14 +79,12 @@ async function openNote(note) {
   renderMedia();
 
   isEditing = false;
-  allowSwipeClose = true;
   setEditable(false);
-
-  modal.classList.add('active');
+  openModal();
 }
 
 /* =========================
-   MEDIA RENDER
+   MEDIA
 ========================= */
 function renderMedia() {
   track.innerHTML = '';
@@ -99,8 +103,10 @@ function renderMedia() {
     if (m.type.startsWith('video')) {
       item.innerHTML = `<video src="${url}" controls></video>`;
     } else {
-      item.innerHTML = `<img src="${url}">`;
-      item.onclick = () => openFullscreen(i);
+      const img = document.createElement('img');
+      img.src = url;
+      img.onclick = () => openFullscreen(i);
+      item.appendChild(img);
     }
 
     track.appendChild(item);
@@ -115,30 +121,36 @@ track.addEventListener('scroll', () => {
   updateIndicator();
 });
 
-const updateIndicator = () =>
-  (indicator.textContent = `${currentMediaIndex + 1} / ${media.length}`);
+const updateIndicator = () => {
+  indicator.textContent = media.length
+    ? `${currentMediaIndex + 1} / ${media.length}`
+    : '';
+};
 
 /* =========================
    FULLSCREEN
 ========================= */
 function openFullscreen(i) {
   currentMediaIndex = i;
-  fullscreen.classList.add('active');
-  drawFullscreen();
-}
+  fullscreenContent.innerHTML = '';
 
-function drawFullscreen() {
-  const m = media[currentMediaIndex];
+  const m = media[i];
   const url = URL.createObjectURL(m.blob);
 
-  fullscreenImg.src = url;
+  if (m.type.startsWith('video')) {
+    fullscreenContent.innerHTML = `<video src="${url}" controls autoplay></video>`;
+  } else {
+    fullscreenContent.innerHTML = `<img src="${url}">`;
+  }
+
+  fullscreen.classList.remove('hidden');
 }
 
 document.getElementById('closeFullscreen').onclick = () =>
-  fullscreen.classList.remove('active');
+  fullscreen.classList.add('hidden');
 
 /* =========================
-   ADD NOTE
+   ADD NOTE (+)
 ========================= */
 document.getElementById('openAdd').onclick = () => {
   currentId = Date.now();
@@ -150,11 +162,14 @@ document.getElementById('openAdd').onclick = () => {
   renderMedia();
 
   isEditing = true;
-  allowSwipeClose = false;
   setEditable(true);
-
-  modal.classList.add('active');
+  openModal();
 };
+
+/* =========================
+   CLOSE MODAL
+========================= */
+document.getElementById('closeModal').onclick = closeModal;
 
 /* =========================
    ADD MEDIA
@@ -176,7 +191,7 @@ mediaInput.onchange = async () => {
 /* =========================
    SAVE
 ========================= */
-document.getElementById('save').onclick = async () => {
+document.getElementById('saveNote').onclick = async () => {
   if (!titleEl.value.trim()) return;
 
   await saveNote({
@@ -186,16 +201,16 @@ document.getElementById('save').onclick = async () => {
     mediaIds
   });
 
-  modal.classList.remove('active');
+  closeModal();
   renderNotes();
 };
 
 /* =========================
    DELETE
 ========================= */
-document.getElementById('delete').onclick = async () => {
+document.getElementById('deleteNote').onclick = async () => {
   await deleteNote(currentId);
-  modal.classList.remove('active');
+  closeModal();
   renderNotes();
 };
 
