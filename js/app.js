@@ -1,8 +1,10 @@
+import { openDB, getAllNotes, saveNote, deleteNote } from './db.js';
+
 /* =========================
    STATE
 ========================= */
-let notes = JSON.parse(localStorage.getItem('notes') || '[]');
-let currentId = null;
+let notes = [];
+let currentNote = null;
 let isEditing = false;
 let media = [];
 let currentMediaIndex = 0;
@@ -11,8 +13,8 @@ let currentMediaIndex = 0;
    ELEMENTS
 ========================= */
 const notesEl = document.getElementById('notes');
-
 const modal = document.getElementById('modal');
+const card = document.getElementById('card');
 const fullscreen = document.getElementById('fullscreen');
 
 const titleEl = document.getElementById('title');
@@ -24,20 +26,19 @@ const indicator = document.getElementById('mediaIndicator');
 
 const fullscreenImg = document.getElementById('fullscreenImg');
 
-const editBtn = document.getElementById('edit');
-
 /* =========================
    HELPERS
 ========================= */
-function setEditable(value) {
+const setEditable = value => {
   titleEl.disabled = !value;
   textEl.disabled = !value;
-}
+};
 
 /* =========================
    RENDER NOTES
 ========================= */
-function renderNotes() {
+async function renderNotes() {
+  notes = await getAllNotes();
   notesEl.innerHTML = '';
 
   notes.forEach(note => {
@@ -50,35 +51,30 @@ function renderNotes() {
 }
 
 /* =========================
-   OPEN / CLOSE MODAL
+   MODAL
 ========================= */
-function openModal() {
-  modal.classList.add('active');
-}
-
-function closeModal() {
-  modal.classList.remove('active');
-}
+const openModal = () => modal.classList.add('active');
+const closeModal = () => modal.classList.remove('active');
 
 /* =========================
    OPEN NOTE
 ========================= */
 function openNote(note) {
-  currentId = note.id;
+  currentNote = note;
+
   titleEl.value = note.title;
   textEl.value = note.text;
 
-  media = [];
+  media = note.media ? [...note.media] : [];
   renderMedia();
 
   isEditing = false;
   setEditable(false);
-
   openModal();
 }
 
 /* =========================
-   MEDIA RENDER (🔥 ОСНОВНОЕ)
+   MEDIA RENDER
 ========================= */
 function renderMedia() {
   track.innerHTML = '';
@@ -89,19 +85,15 @@ function renderMedia() {
     return;
   }
 
-  media.forEach((file, index) => {
-    const url = URL.createObjectURL(file);
+  media.forEach((m, i) => {
+    const url = URL.createObjectURL(m.blob);
     const item = document.createElement('div');
     item.className = 'media-item';
 
-    if (file.type.startsWith('video')) {
-      item.innerHTML = `
-        <video src="${url}" controls></video>
-      `;
+    if (m.type.startsWith('video')) {
+      item.innerHTML = `<video src="${url}" controls></video>`;
     } else {
-      item.innerHTML = `
-        <img src="${url}">
-      `;
+      item.innerHTML = `<img src="${url}">`;
       item.onclick = () => openFullscreen(url);
     }
 
@@ -112,7 +104,7 @@ function renderMedia() {
 }
 
 /* =========================
-   MEDIA SCROLL INDICATOR
+   MEDIA SCROLL
 ========================= */
 track.addEventListener('scroll', () => {
   const width = track.clientWidth;
@@ -120,27 +112,26 @@ track.addEventListener('scroll', () => {
   updateIndicator();
 });
 
-function updateIndicator() {
+const updateIndicator = () => {
   indicator.textContent = `${currentMediaIndex + 1} / ${media.length}`;
-}
+};
 
 /* =========================
    FULLSCREEN
 ========================= */
-function openFullscreen(url) {
+const openFullscreen = url => {
   fullscreenImg.src = url;
   fullscreen.classList.add('active');
-}
+};
 
-function closeFullscreen() {
+document.getElementById('closeFullscreen').onclick = () =>
   fullscreen.classList.remove('active');
-}
 
 /* =========================
    BUTTONS
 ========================= */
 document.getElementById('openAdd').onclick = () => {
-  currentId = null;
+  currentNote = null;
   titleEl.value = '';
   textEl.value = '';
   media = [];
@@ -148,57 +139,50 @@ document.getElementById('openAdd').onclick = () => {
 
   isEditing = true;
   setEditable(true);
-
   openModal();
 };
 
 document.getElementById('close').onclick = closeModal;
-document.getElementById('closeFullscreen').onclick = closeFullscreen;
+
+document.getElementById('edit').onclick = () => {
+  isEditing = true;
+  setEditable(true);
+  titleEl.focus();
+};
 
 document.getElementById('addMedia').onclick = () => {
   if (!isEditing) return;
   mediaInput.click();
 };
 
-mediaInput.onchange = () => {
-  media.push(...mediaInput.files);
+mediaInput.onchange = async () => {
+  for (const file of mediaInput.files) {
+    media.push({
+      blob: file,
+      type: file.type
+    });
+  }
   mediaInput.value = '';
   renderMedia();
 };
 
 /* =========================
-   EDIT
-========================= */
-editBtn.onclick = () => {
-  isEditing = true;
-  setEditable(true);
-  titleEl.focus();
-};
-
-/* =========================
    SAVE
 ========================= */
-document.getElementById('save').onclick = () => {
+document.getElementById('save').onclick = async () => {
   if (!titleEl.value.trim()) return;
 
-  if (!currentId) {
-    currentId = Date.now();
-  }
-
   const note = {
-    id: currentId,
+    id: currentNote?.id,
     title: titleEl.value,
-    text: textEl.value
+    text: textEl.value,
+    media
   };
 
-  notes = notes.filter(n => n.id !== currentId);
-  notes.unshift(note);
-
-  localStorage.setItem('notes', JSON.stringify(notes));
+  await saveNote(note);
 
   isEditing = false;
   setEditable(false);
-
   closeModal();
   renderNotes();
 };
@@ -206,12 +190,9 @@ document.getElementById('save').onclick = () => {
 /* =========================
    DELETE
 ========================= */
-document.getElementById('delete').onclick = () => {
-  if (!currentId) return;
-
-  notes = notes.filter(n => n.id !== currentId);
-  localStorage.setItem('notes', JSON.stringify(notes));
-
+document.getElementById('delete').onclick = async () => {
+  if (!currentNote) return;
+  await deleteNote(currentNote.id);
   closeModal();
   renderNotes();
 };
@@ -219,4 +200,4 @@ document.getElementById('delete').onclick = () => {
 /* =========================
    INIT
 ========================= */
-renderNotes();
+openDB().then(renderNotes);
