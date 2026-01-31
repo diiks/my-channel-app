@@ -1,34 +1,52 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DIX</title>
-
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="logo">DIX</div>
+  <div id="app">
+    <div id="notes"></div>
+  </div>
 
-    <input
-      type="text"
-      id="search"
-      class="search"
-      placeholder="Поиск"
-    />
-  </header>
-
-  <!-- MAIN APP -->
-  <main id="app">
-    <!-- тут будут каналы / заметки / контент -->
-  </main>
-
-  <!-- PLUS BUTTON -->
   <button id="openAdd">+</button>
 
-  <script src="js/app.js"></script>
+  <!-- MODAL -->
+  <div class="modal hidden" id="modal">
+    <div class="card" id="card">
+
+      <button class="card-close" id="closeModal">✕</button>
+
+      <input type="text" id="title" placeholder="Заголовок" />
+      <textarea id="text" placeholder="Текст заметки"></textarea>
+
+      <div class="media-wrapper">
+        <div class="media-list" id="mediaTrack"></div>
+        <div class="media-indicator" id="mediaIndicator"></div>
+      </div>
+
+      <input type="file" id="mediaInput" accept="image/*,video/*" multiple hidden>
+
+      <div class="card-actions">
+        <button class="action-btn delete" id="delete">🗑️</button>
+        <button class="action-btn" id="addMedia">📸</button>
+        <button class="action-btn" id="save">✅</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FULLSCREEN -->
+  <div class="media-fullscreen hidden" id="fullscreen">
+    <button class="media-fullscreen-close" id="closeFullscreen">✕</button>
+    <img id="fullscreenImg">
+  </div>
+
+  <!-- ВАЖНО -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
