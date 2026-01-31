@@ -1,60 +1,80 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DIX</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Channel App</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-<header class="top-bar">
-  <div class="logo">DIX</div>
-</header>
+  <!-- HEADER -->
+  <header class="header">
+    <h1>Заметки</h1>
+    <button id="openAdd" class="circle-btn">➕</button>
+  </header>
 
-<main class="main">
-  <div id="notes"></div>
-</main>
+  <!-- NOTES LIST -->
+  <main id="notes" class="notes"></main>
 
-<button class="add-btn" id="openAdd">+</button>
+  <!-- MODAL -->
+  <div id="modal" class="modal">
+    <div id="card" class="card">
 
-<!-- МОДАЛКА -->
-<div class="modal" id="modal">
-  <div class="card" id="card">
+      <!-- CLOSE -->
+      <button id="close" class="close-btn">✕</button>
 
-    <button class="close-x" id="close">✖</button>
+      <!-- TITLE -->
+      <input
+        id="title"
+        type="text"
+        placeholder="Заголовок"
+        disabled
+      />
 
-    <input id="title" placeholder="Тема">
+      <!-- TEXT -->
+      <textarea
+        id="text"
+        placeholder="Текст заметки"
+        disabled
+      ></textarea>
 
-    <!-- МЕДИА -->
-    <div class="media-viewer" id="mediaViewer">
-      <div class="media-track" id="mediaTrack"></div>
-      <div class="media-indicator" id="mediaIndicator"></div>
+      <!-- MEDIA -->
+      <div class="media-wrapper">
+        <div id="mediaTrack" class="media-track"></div>
+        <div id="mediaIndicator" class="media-indicator"></div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="actions">
+        <button id="delete" class="circle-btn danger">🗑️</button>
+        <button id="edit" class="circle-btn">✏️</button>
+        <button id="addMedia" class="circle-btn">📸</button>
+        <button id="save" class="circle-btn">✅</button>
+      </div>
+
+      <!-- HIDDEN FILE INPUT -->
+      <input
+        id="mediaInput"
+        type="file"
+        accept="image/*,video/*"
+        multiple
+        hidden
+      />
+
     </div>
-
-    <!-- ТЕКСТ -->
-    <div class="text-wrapper">
-      <textarea id="text" placeholder="Текст заметки"></textarea>
-    </div>
-
-    <input type="file" id="mediaInput" accept="image/*,video/*" multiple hidden>
-
-    <div class="actions">
-      <button class="circle danger" id="delete">🗑️</button>
-      <button class="circle" id="edit">✏️</button>
-      <button class="circle" id="addMedia">📸</button>
-      <button class="circle success" id="save">✅</button>
-    </div>
-
   </div>
-</div>
 
-<!-- FULLSCREEN -->
-<div class="fullscreen" id="fullscreen">
-  <button class="close-x" id="closeFullscreen">✖</button>
-  <img id="fullscreenImg">
-</div>
+  <!-- FULLSCREEN MEDIA -->
+  <div id="fullscreen" class="fullscreen">
+    <button id="closeFullscreen" class="close-btn">✕</button>
+    <img id="fullscreenImg" />
+  </div>
 
-<script src="js/app.js"></script>
+  <!-- SCRIPTS -->
+  <script type="module" src="js/app.js"></script>
+
 </body>
 </html>
