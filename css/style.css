@@ -1,3 +1,5 @@
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
   background: #004d33;
@@ -5,9 +7,10 @@ body {
   color: white;
 }
 
+/* HEADER */
 .top-bar {
   background: black;
-  padding: 16px;
+  padding: 18px;
 }
 
 .logo {
@@ -16,6 +19,7 @@ body {
   color: #39ff14;
 }
 
+/* MAIN */
 .main {
   max-width: 520px;
   margin: auto;
@@ -28,8 +32,10 @@ body {
   padding: 20px;
   margin-bottom: 12px;
   text-align: center;
+  cursor: pointer;
 }
 
+/* ADD */
 .add-btn {
   position: fixed;
   right: 20px;
@@ -37,23 +43,23 @@ body {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: none;
   background: black;
+  border: none;
   font-size: 32px;
+  color: #004d33;
 }
 
+/* MODAL */
 .modal {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.85);
-  display: none;
+  display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.modal.active {
-  display: flex;
-}
+.hidden { display: none; }
 
 .card {
   position: relative;
@@ -68,6 +74,7 @@ body {
   gap: 14px;
 }
 
+/* CLOSE */
 .close-x {
   position: absolute;
   top: 12px;
@@ -78,6 +85,7 @@ body {
   font-size: 18px;
 }
 
+/* INPUTS */
 input, textarea {
   background: #222;
   border-radius: 16px;
@@ -86,17 +94,18 @@ input, textarea {
   color: white;
 }
 
-.text-wrapper {
-  flex: 1;
-  overflow-y: auto;
-}
-
 textarea {
   min-height: 220px;
   resize: none;
   font-size: 16px;
 }
 
+/* TEXT */
+.text-wrapper {
+  overflow-y: auto;
+}
+
+/* MEDIA */
 .media-viewer {
   position: relative;
   overflow: hidden;
@@ -119,6 +128,7 @@ textarea {
   border-radius: 16px;
 }
 
+/* INDICATOR */
 .media-indicator {
   position: absolute;
   bottom: 8px;
@@ -126,8 +136,10 @@ textarea {
   background: rgba(0,0,0,.6);
   padding: 4px 10px;
   border-radius: 12px;
+  font-size: 13px;
 }
 
+/* ACTIONS */
 .actions {
   display: flex;
   justify-content: space-between;
@@ -139,14 +151,23 @@ textarea {
   border-radius: 50%;
   background: #222;
   border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.circle img {
-  width: 26px;
+  font-size: 20px;
 }
 
 .danger { background: #ff3b3b; }
 .success { background: #2ecc71; }
+
+/* FULLSCREEN */
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fullscreen img {
+  max-width: 100%;
+  max-height: 100%;
+}
