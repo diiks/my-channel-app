@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DIX</title>
+  <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -43,10 +43,16 @@
   <!-- FULLSCREEN -->
   <div class="media-fullscreen hidden" id="fullscreen">
     <button class="media-fullscreen-close" id="closeFullscreen">✕</button>
-    <img id="fullscreenImg">
+    <div id="fullscreenContent"></div>
   </div>
 
-  <!-- ВАЖНО -->
   <script type="module" src="js/app.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+
 </body>
 </html>
