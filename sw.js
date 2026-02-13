@@ -1,13 +1,12 @@
-const CACHE = 'dix-cache-v1';
+const CACHE = 'dix-cache-v2';
+
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/app.js',
-  '/js/db.js',
-  '/js/ui.js',
-  '/js/media.js',
-  '/manifest.json'
+  './',
+  './index.html',
+  './css/style.css',
+  './js/app.js',
+  './js/db.js',
+  './manifest.json'
 ];
 
 self.addEventListener('install', e => {
