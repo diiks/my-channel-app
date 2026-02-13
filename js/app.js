@@ -4,45 +4,29 @@ import {
   saveNote,
   deleteNote,
   saveMedia,
-  getMediaByIds
+  getMediaByIds,
+  deleteMedia
 } from './db.js';
 
-/* =========================
-   STATE
-========================= */
 let notes = [];
 let currentId = null;
 let media = [];
 let mediaIds = [];
 let currentMediaIndex = 0;
 
-/* =========================
-   ELEMENTS (СОВПАДАЮТ С HTML)
-========================= */
 const notesEl = document.getElementById('notes');
-
 const modal = document.getElementById('modal');
-const card = document.getElementById('card');
-
 const titleEl = document.getElementById('title');
 const textEl = document.getElementById('text');
-
 const mediaInput = document.getElementById('mediaInput');
 const track = document.getElementById('mediaTrack');
 const indicator = document.getElementById('mediaIndicator');
-
 const fullscreen = document.getElementById('fullscreen');
-const fullscreenImg = document.getElementById('fullscreenImg');
+const fullscreenContent = document.getElementById('fullscreenContent');
 
-/* =========================
-   HELPERS
-========================= */
 const openModal = () => modal.classList.remove('hidden');
 const closeModal = () => modal.classList.add('hidden');
 
-/* =========================
-   RENDER NOTES
-========================= */
 async function renderNotes() {
   notes = await getAllNotes();
   notesEl.innerHTML = '';
@@ -56,24 +40,16 @@ async function renderNotes() {
   });
 }
 
-/* =========================
-   OPEN NOTE
-========================= */
 async function openNote(note) {
   currentId = note.id;
   titleEl.value = note.title;
   textEl.value = note.text;
-
   mediaIds = note.mediaIds || [];
   media = await getMediaByIds(mediaIds);
-
   renderMedia();
   openModal();
 }
 
-/* =========================
-   MEDIA RENDER
-========================= */
 function renderMedia() {
   track.innerHTML = '';
   currentMediaIndex = 0;
@@ -89,7 +65,10 @@ function renderMedia() {
     item.className = 'media-item';
 
     if (m.type.startsWith('video')) {
-      item.innerHTML = `<video src="${url}" controls></video>`;
+      const v = document.createElement('video');
+      v.src = url;
+      v.controls = true;
+      item.appendChild(v);
     } else {
       const img = document.createElement('img');
       img.src = url;
@@ -115,28 +94,31 @@ function updateIndicator() {
     : '';
 }
 
-/* =========================
-   FULLSCREEN
-========================= */
 function openFullscreen(index) {
+  fullscreenContent.innerHTML = '';
   const m = media[index];
   const url = URL.createObjectURL(m.blob);
 
   if (m.type.startsWith('video')) {
-    fullscreenImg.outerHTML = `<video src="${url}" controls autoplay></video>`;
+    const v = document.createElement('video');
+    v.src = url;
+    v.controls = true;
+    v.autoplay = true;
+    fullscreenContent.appendChild(v);
   } else {
-    fullscreenImg.src = url;
+    const img = document.createElement('img');
+    img.src = url;
+    fullscreenContent.appendChild(img);
   }
 
   fullscreen.classList.remove('hidden');
 }
 
-document.getElementById('closeFullscreen').onclick = () =>
+document.getElementById('closeFullscreen').onclick = () => {
   fullscreen.classList.add('hidden');
+  fullscreenContent.innerHTML = '';
+};
 
-/* =========================
-   ADD NOTE
-========================= */
 document.getElementById('openAdd').onclick = () => {
   currentId = Date.now();
   titleEl.value = '';
@@ -147,14 +129,8 @@ document.getElementById('openAdd').onclick = () => {
   openModal();
 };
 
-/* =========================
-   CLOSE MODAL
-========================= */
 document.getElementById('closeModal').onclick = closeModal;
 
-/* =========================
-   ADD MEDIA
-========================= */
 document.getElementById('addMedia').onclick = () => {
   mediaInput.click();
 };
@@ -169,9 +145,6 @@ mediaInput.onchange = async () => {
   renderMedia();
 };
 
-/* =========================
-   SAVE NOTE (✔ РАБОТАЕТ)
-========================= */
 document.getElementById('save').onclick = async () => {
   if (!titleEl.value.trim()) return;
 
@@ -179,24 +152,25 @@ document.getElementById('save').onclick = async () => {
     id: currentId,
     title: titleEl.value,
     text: textEl.value,
-    mediaIds
+    mediaIds,
+    createdAt: Date.now()
   });
 
   closeModal();
   renderNotes();
 };
 
-/* =========================
-   DELETE NOTE
-========================= */
 document.getElementById('delete').onclick = async () => {
   if (!currentId) return;
+  if (!confirm('Удалить заметку?')) return;
+
+  for (const id of mediaIds) {
+    await deleteMedia(id);
+  }
+
   await deleteNote(currentId);
   closeModal();
   renderNotes();
 };
 
-/* =========================
-   INIT
-========================= */
 openDB().then(renderNotes);
