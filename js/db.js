@@ -1,19 +1,14 @@
 let db;
 
-/* =========================
-   OPEN DB
-========================= */
 export const openDB = () =>
   new Promise((resolve, reject) => {
-    const req = indexedDB.open('DIX_DB', 3);
+    const req = indexedDB.open('DIX_DB', 4);
 
     req.onupgradeneeded = e => {
       db = e.target.result;
 
       if (!db.objectStoreNames.contains('notes')) {
-        db.createObjectStore('notes', {
-          keyPath: 'id'
-        });
+        db.createObjectStore('notes', { keyPath: 'id' });
       }
 
       if (!db.objectStoreNames.contains('media')) {
@@ -32,15 +27,17 @@ export const openDB = () =>
     req.onerror = () => reject(req.error);
   });
 
-/* =========================
-   NOTES
-========================= */
 export const getAllNotes = () =>
   new Promise(resolve => {
     const tx = db.transaction('notes', 'readonly');
     const store = tx.objectStore('notes');
     const req = store.getAll();
-    req.onsuccess = () => resolve(req.result || []);
+    req.onsuccess = () => {
+      const sorted = (req.result || []).sort(
+        (a, b) => b.createdAt - a.createdAt
+      );
+      resolve(sorted);
+    };
   });
 
 export const saveNote = note =>
@@ -57,9 +54,6 @@ export const deleteNote = id =>
     tx.oncomplete = resolve;
   });
 
-/* =========================
-   MEDIA
-========================= */
 export const saveMedia = file =>
   new Promise(resolve => {
     const tx = db.transaction('media', 'readwrite');
@@ -74,24 +68,16 @@ export const saveMedia = file =>
   });
 
 export const getMediaByIds = ids =>
-  new Promise(resolve => {
-    const tx = db.transaction('media', 'readonly');
-    const store = tx.objectStore('media');
-    const result = [];
-
-    let done = 0;
-
-    ids.forEach(id => {
-      const req = store.get(id);
-      req.onsuccess = () => {
-        if (req.result) result.push(req.result);
-        done++;
-        if (done === ids.length) resolve(result);
-      };
-    });
-
-    if (!ids.length) resolve([]);
-  });
+  Promise.all(
+    ids.map(id =>
+      new Promise(resolve => {
+        const tx = db.transaction('media', 'readonly');
+        const store = tx.objectStore('media');
+        const req = store.get(id);
+        req.onsuccess = () => resolve(req.result);
+      })
+    )
+  );
 
 export const deleteMedia = id =>
   new Promise(resolve => {
